@@ -196,6 +196,7 @@ create table if not exists horizon_sms_security_code (
 alter table horizon_sms_security_code add constraint tb_horizon_business_user_fk Foreign Key(user_id) References horizon_user(id);
 alter table horizon_sms_security_code add constraint tb_horizon_node_fk Foreign Key(node_id) References horizon_node(id);
 
+
 insert into horizon_user values(null,'admin', 'admin', 'ganjunzx@gmail.com',now(), now(), 0, 0, '中国', '广东', '深圳', '白石洲乔城豪苑', '科创', '科创', now(), 0, '18676719508', '305534274', 0);
 
 --create table if not exists horizon_sms_use_record (
