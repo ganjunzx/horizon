@@ -1,0 +1,603 @@
+<link href="../jslib/bootstrap-2.3.1/css/bootstrap.min.css"
+	rel="stylesheet" media="screen">
+<link id="easyuiTheme" rel="stylesheet"
+	href="../jslib/jquery-easyui-1.3.4/themes/bootstrap/easyui.css"
+	type="text/css">
+<link id="easyuiTheme" rel="stylesheet"
+	href="../jslib/jquery-easyui-1.3.4/themes/icon.css" type="text/css">
+<script type="text/javascript" src="../jslib/jquery-2.0.0.js"
+	charset="utf-8"></script>
+<script type="text/javascript"
+	src="../jslib/jquery-easyui-1.3.4/jquery.easyui.min.js" charset="utf-8"></script>
+<script type="text/javascript"
+	src="../jslib/jquery-easyui-1.3.4/locale/easyui-lang-zh_CN.js"
+	charset="utf-8"></script>
+<script type="text/javascript" src="../jslib/extEasyUI.js"
+	charset="utf-8"></script>
+
+<script src="../jslib/hms.js"></script>
+
+<html>
+<head>
+<title>路由管理</title>
+<style type="text/css">
+#fm {
+	margin: 0;
+	padding: 10px 10px;
+}
+
+#fmm {
+	margin: 0;
+	padding: 10px 10px;
+}
+
+.ftitle {
+	font-size: 14px;
+	font-weight: bold;
+	padding: 5px 0;
+	margin-bottom: 10px;
+	border-bottom: 1px solid #ccc;
+}
+
+.fitem {
+	margin-bottom: 5px;
+}
+
+.fitem label {
+	display: inline-block;
+	width: 60px;
+}
+</style>
+<script type="text/javascript">
+	var listNode;
+	$(function() {
+		listNode = $('#listNode').datagrid({
+			url : getBasePath() + "/node/listNode",
+			fit : true,
+			fitColumns : true,
+			border : false,
+			idField : 'id',
+			nowrap : false,
+			remoteSort : false,
+			singleSelect : false,//是否单选  
+			pagination : true,//分页控件  
+			rownumbers : true,//行号  
+			frozenColumns : [ [ {
+				field : 'ndName',
+				title : '热点名',
+				width : 100,
+				sortable : false
+			} ] ],
+			columns : [ [ {
+				field : 'aliasName',
+				title : '别名',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'uniqueName',
+				title : '路由标识',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'mCode',
+				title : '机器码license',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'industry',
+				title : '所属行业',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'turnOffTime',
+				title : '硬性断开时间',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'turnOffFreeTime',
+				title : '空闲断开时间',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'multiTerminalLogin',
+				title : '多终端登录',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'limitSpeed',
+				title : '单IP限速',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'totalLimitIncoming',
+				title : '总下载宽带',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'totalLimitOutgoing',
+				title : '总上传带宽',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'eachLimitIncoming',
+				title : '每用户下载带宽',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'eachLimitOutgoing',
+				title : '每用户上传带宽',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'startTime',
+				title : '开放开始时间',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'endTime',
+				title : '开放结束时间',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'gateWayID',
+				title : 'gatewayID',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'portalUrl',
+				title : '重定向页面',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'updateTime',
+				title : '更新时间',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'loginType',
+				title : '认证方式',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'nodeStatus',
+				title : '激活状态',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'venderID',
+				title : '厂家',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'businessID',
+				title : '商家',
+				width : 100,
+				sortable : false
+			}] ],
+			toolbar : '#toolbar'
+		});
+
+		//设置分页控件  
+		var p = $('#listNode').datagrid('getPager');
+		$(p).pagination({
+			pageSize : 10,//每页显示的记录条数，默认为10  
+			pageList : [ 5, 10, 15 ],//可以设置每页记录条数的列表  
+			beforePageText : '第',//页数文本框前显示的汉字  
+			afterPageText : '页    共 {pages} 页',
+			displayMsg : '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+		/*onBeforeRefresh:function(){ 
+		    $(this).pagination('loading'); 
+		    alert('before refresh'); 
+		    $(this).pagination('loaded'); 
+		}*/
+		});
+
+	});
+
+	function destroyNode() {
+		var row = $('#listNode').datagrid('getSelected');
+		if (row) {
+			$.messager.confirm('Confirm', '你确定要删除此用户吗?', function(r) {
+				if (r) {
+					$.post(getBasePath() + "/node/deleteNode", {
+						id : row.id
+					}, 
+					function(result) {
+						if (result.success == false) {
+							$.messager.show({
+								title : 'Error',
+								msg : result.msg
+							});
+						} else {
+							$('#listNode').datagrid('reload');
+							$('#listNode').datagrid('clearSelections');
+						}
+					}, 'json');
+				}
+			});
+		}
+	}
+
+	function editNode() {
+		var row = $('#listNode').datagrid('getSelected');
+		if (row) {
+			$('#dlg').dialog('open').dialog('setTitle', '修改');
+			$('#fm').form('load', row);
+			
+			$('#venderUserEdit').combobox({  
+			    url:getBasePath() + "/node/listUser?userType=VENDERUSER",  
+			    valueField:'id',  
+			    textField:'companyName'
+			});
+			$('#businessUserEdit').combobox({  
+			    url:getBasePath() + "/node/listUser?userType=BUSINESSUSER",  
+			    valueField:'id',  
+			    textField:'companyName'
+			});
+		}
+
+	}
+
+	function saveEditNode() {
+		$('#fm').form('submit', {
+			url : getBasePath() + "/node/editNode",
+			onSubmit : function() {
+				return $(this).form('validate');
+			},
+			success : function(data) {
+				var result = $.parseJSON(data);
+				if (result.success == false) {
+					$.messager.show({
+						title : 'Error',
+						msg : result.msg
+					});
+				} else {
+					$('#dlg').dialog('close');
+					$('#listNode').datagrid('reload');
+					$('#listNode').datagrid('clearSelections');
+				}
+			}
+		});
+	}
+
+	function addNode() {
+		$('#ddlg').dialog('open').dialog('setTitle', '新增');
+		$('#venderUser').combobox({  
+		    url:getBasePath() + "/node/listUser?userType=VENDERUSER",  
+		    valueField:'id',  
+		    textField:'companyName'
+		});
+		$('#businessUser').combobox({  
+		    url:getBasePath() + "/node/listUser?userType=BUSINESSUSER",  
+		    valueField:'id',  
+		    textField:'companyName'
+		});
+		/* $('#user_id').combobox({
+			url : getBasePath()+"/user/all",
+			editable : false,
+			valueField :'user_id',
+			textField : 'user_id',
+			multiple : false,
+			onSelect:function(data){
+			}		
+		});
+		$('#v_user_id').combobox({
+			url : getBasePath()+"/v_user/get_all_hive_db",
+			editable : false,
+			valueField :'hive_db',
+			textField : 'hive_db',
+			multiple : false,
+			onSelect:function(data){
+			}		
+		}); */
+	}
+
+	function saveNewNode() {
+		$('#fmm').form('submit', {
+			url : getBasePath() + "/node/addNode",
+			onSubmit : function() {
+				return $(this).form('validate');
+			},
+			success : function(data) {
+				/* var result = eval('('+result+')'); */
+				var result = $.parseJSON(data);
+				if (result.success == false) {
+					$.messager.show({
+						title : 'Error',
+						msg : result.msg
+					});
+				} else {
+					$('#ddlg').dialog('close');
+					$('#listNode').datagrid('reload');
+					$('#listNode').datagrid('clearSelections');
+				}
+			}
+		});
+	}
+</script>
+</head>
+<body>
+	<div class="easyui-layout"
+		style="width: 600PX; height: 500PX; border-left: 0px; MARGIN-LEFT: -1PX;"
+		data-options="fit : true,border : false">
+		<div data-options="region:'center',border:false"
+			style="border-left: 0px; margin-left: -1px;">
+			<table id="listNode"></table>
+		</div>
+	</div>
+
+	<div id="toolbar" style="display: none;">
+		<div style="float: left">
+		<a onClick="addNode();" href="javascript:void(0);"
+			class="easyui-linkbutton"
+			data-options="plain:true,iconCls:'icon-add'">添加</a> <a
+			onClick="editNode();" href="javascript:void(0)"
+			class="easyui-linkbutton" iconCls="icon-edit" plain="true">编辑</a> <a
+			onClick="destroyNode();" href="javascript:void(0)"
+			class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a>
+         </div>
+	</div>
+	<div id="dlg" class="easyui-dialog"
+		style="width: 450px; height: 600px; padding: 10px 20px" closed="true"
+		buttons="#dlg-button">
+		<form id="fm" method="POST" novalidate>
+			<div class="ftitle">路由信息</div>
+			<input id="id" type="hidden" name="id" />
+			<div class="fitem">
+				<label>热点名:</label> <input id="ndName" name="ndName" type="text"
+					data-options="required:true">
+			</div>
+			<div class="fitem">
+				<label>别 名:</label> <input id="aliasName" name="aliasName"
+					type="text">
+			</div>
+			<div class="fitem">
+				<label>路由标识:</label> <input id="uniqueName" type="text"
+					name="uniqueName" data-options="required:true" />
+			</div>
+			<div class="fitem">
+				<label>机器码license:</label> <input id="mCode" name="mCode" type="text"
+					data-options="required:true"/>
+			</div>
+			<div class="fitem">
+				<label>所属行业:</label>
+				<select id="industry" class="easyui-combobox" name="industry">  
+   					<option value="0">咖啡厅(COFFEE SHOP)</option>  
+   					<option value="1">西餐厅(WESTERN RESTAURANT)</option>
+   					<option value="2">中餐厅(CHINESE RESTAURANT)</option>
+   					<option value="3">茶楼(TEA SHOP)</option>
+   					<option value="4">会所(CHAMBER)</option>
+   					<option value="5">便利店(CONVENIENCE STORE)</option>
+   					<option value="6">饮品店(DRINK SHOP)</option>
+   					<option value="7">小区(HOUSINGESTATE)</option>
+   					<option value="8">出租屋(LET)</option>
+   					<option value="9">学校(SCHOOL)</option>
+   					<option value="10">工厂(FACTORY)</option>
+   					<option value="11">公司(COMPANY)</option>
+   					<option value="12">其它(OTHER)</option>
+				</select> 
+			</div>
+			<div class="fitem">
+				<label>硬性断开时间:</label> <input id="turnOffTime" name="turnOffTime" type="text"
+					data-options="required:true" />
+			</div>
+			<div class="fitem">
+				<label>空闲断开时间:</label> <input id="turnOffFreeTime" name="turnOffFreeTime" type="text"
+					data-options="required:true" />
+			</div>
+			<div class="fitem">
+				<label>多终端登录:</label>
+				<input style="width: 20px;" id="multiTerminalLogin" name="multiTerminalLogin"
+					type="radio" value="0" data-options="required:true"
+					checked="true"> 禁止 &nbsp;&nbsp;&nbsp;&nbsp; <input
+					style="width: 20px;" id="multiTerminalLogin" name="multiTerminalLogin" type="radio"
+					value="1" data-options="required:true"> 允许<br />
+			</div>
+			<div class="fitem">
+				<label>单IP限速:</label>
+				<input style="width: 20px;" id="limitSpeed" name="limitSpeed"
+					type="radio" value="0" data-options="required:true"
+					checked="true"> 不启用 &nbsp;&nbsp;&nbsp;&nbsp; <input
+					style="width: 20px;" id="limitSpeed" name="limitSpeed" type="radio"
+					value="1" data-options="required:true"> 启用<br />
+			</div>
+			<div id="isLimitSpeed" class="fitem">
+				&nbsp;&nbsp;&nbsp;&nbsp;<label>总下载宽带:</label>
+				<input id="totalLimitIncoming" name="totalLimitIncoming" type="text"
+					data-options="required:true" /><br />
+					&nbsp;&nbsp;&nbsp;&nbsp;<label>总上传带宽:</label>
+				<input id="totalLimitOutgoing" name="totalLimitOutgoing" type="text"
+					data-options="required:true" /><br />
+					&nbsp;&nbsp;&nbsp;&nbsp;<label>每用户下载带宽:</label>
+				<input id="eachLimitIncoming" name="eachLimitIncoming" type="text"
+					data-options="required:true" /><br />
+					&nbsp;&nbsp;&nbsp;&nbsp;<label>每用户上传带宽:</label>
+				<input id="eachLimitOutgoing" name="eachLimitOutgoing" type="text"
+					data-options="required:true" /><br />
+					
+			</div>
+			<div class="fitem">
+				<label>开放开始时间:</label>
+				<input id="startTime" class="easyui-timespinner"  name="startTime"
+        required="required" data-options="min:'00:00',showSeconds:true" />
+			</div>
+			<div class="fitem">
+				<label>开放结束时间:</label>
+				<input id="endTime" class="easyui-timespinner"  name="endTime"
+        required="required" data-options="min:'00:00',showSeconds:true" />
+			</div>
+			<div class="fitem">
+				<label>gatewayID:</label>
+				<input id="gateWayID" name="gateWayID" type="text"/>
+			</div>
+			<div class="fitem">
+				<label>重定向页面:</label>
+				<input id="portalUrl" name="portalUrl" type="text"/>
+			</div>
+			
+			<div class="fitem">
+				<label>是否激活:</label>
+				<input style="width: 20px;" id="nodeStatus" name="nodeStatus"
+					type="radio" value="0" data-options="required:true"
+					checked="true"> 是 &nbsp;&nbsp;&nbsp;&nbsp; <input
+					style="width: 20px;" id="nodeStatus" name="nodeStatus" type="radio"
+					value="1" data-options="required:true"> 否
+			</div>
+			
+			<div class="fitem">
+				<label>认证方式:</label>
+					<select id="loginType" class="easyui-combobox" name="loginType" style="width:200px;">  
+   					<option value="0">不需认证</option>  
+   					<option value="1">用户认证</option>
+   					<option value="2">短信验证码认证</option>
+				</select>
+			</div>
+			<div class="fitem">
+				<label>厂家:</label>
+				<input id="venderUserEdit" name="venderUser"/>  
+			</div>
+			<div class="fitem">
+				<label>商家:</label>
+				<input id="businessUserEdit" name="businessUser"/>  
+			</div>
+		</form>
+	</div>
+	<div id="dlg-button">
+		<a href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-ok" onClick="saveEditNode()">保存</a> <a
+			href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-cancel" onClick="javascript:$('#dlg').dialog('close')">取消</a>
+	</div>
+
+	<div id="ddlg" class="easyui-dialog"
+		style="width: 450px; border: 0PX; BORDER-TOP: 1PX solid #DADADA;; height: 600px; padding: 10px 20px 20PX 10PX;"
+		closed="true" buttons="#ddlg-button">
+		<form id="fmm" method="POST" novalidate>
+			<div class="ftitle">路由信息</div>
+			<div class="fitem">
+				<label>热点名:</label> <input id="ndName" name="ndName" type="text"
+					data-options="required:true">
+			</div>
+			<div class="fitem">
+				<label>别 名:</label> <input id="aliasName" name="aliasName"
+					type="text">
+			</div>
+			<div class="fitem">
+				<label>路由标识:</label> <input id="uniqueName" type="text"
+					name="uniqueName" data-options="required:true" />
+			</div>
+			<div class="fitem">
+				<label>机器码license:</label> <input id="mCode" name="mCode" type="text"
+					data-options="required:true"/>
+			</div>
+			<div class="fitem">
+				<label>所属行业:</label>
+				<select id="industry" class="easyui-combobox" name="industry">  
+   					<option value="0">咖啡厅(COFFEE SHOP)</option>  
+   					<option value="1">西餐厅(WESTERN RESTAURANT)</option>
+   					<option value="2">中餐厅(CHINESE RESTAURANT)</option>
+   					<option value="3">茶楼(TEA SHOP)</option>
+   					<option value="4">会所(CHAMBER)</option>
+   					<option value="5">便利店(CONVENIENCE STORE)</option>
+   					<option value="6">饮品店(DRINK SHOP)</option>
+   					<option value="7">小区(HOUSINGESTATE)</option>
+   					<option value="8">出租屋(LET)</option>
+   					<option value="9">学校(SCHOOL)</option>
+   					<option value="10">工厂(FACTORY)</option>
+   					<option value="11">公司(COMPANY)</option>
+   					<option value="12">其它(OTHER)</option>
+				</select> 
+			</div>
+			<div class="fitem">
+				<label>硬性断开时间:</label> <input id="turnOffTime" name="turnOffTime" type="text"
+					data-options="required:true" />
+			</div>
+			<div class="fitem">
+				<label>空闲断开时间:</label> <input id="turnOffFreeTime" name="turnOffFreeTime" type="text"
+					data-options="required:true" />
+			</div>
+			<div class="fitem">
+				<label>多终端登录:</label>
+				<input style="width: 20px;" id="multiTerminalLogin" name="multiTerminalLogin"
+					type="radio" value="0" data-options="required:true"
+					checked="true"> 禁止 &nbsp;&nbsp;&nbsp;&nbsp; <input
+					style="width: 20px;" id="multiTerminalLogin" name="multiTerminalLogin" type="radio"
+					value="1" data-options="required:true"> 允许<br />
+			</div>
+			<div class="fitem">
+				<label>单IP限速:</label>
+				<input style="width: 20px;" id="limitSpeed" name="limitSpeed"
+					type="radio" value="0" data-options="required:true"
+					checked="true"> 不启用 &nbsp;&nbsp;&nbsp;&nbsp; <input
+					style="width: 20px;" id="limitSpeed" name="limitSpeed" type="radio"
+					value="1" data-options="required:true"> 启用<br />
+			</div>
+			<div id="isLimitSpeed" class="fitem">
+				&nbsp;&nbsp;&nbsp;&nbsp;<label>总下载宽带:</label>
+				<input id="totalLimitIncoming" name="totalLimitIncoming" type="text"
+					data-options="required:true" /><br />
+					&nbsp;&nbsp;&nbsp;&nbsp;<label>总上传带宽:</label>
+				<input id="totalLimitOutgoing" name="totalLimitOutgoing" type="text"
+					data-options="required:true" /><br />
+					&nbsp;&nbsp;&nbsp;&nbsp;<label>每用户下载带宽:</label>
+				<input id="eachLimitIncoming" name="eachLimitIncoming" type="text"
+					data-options="required:true" /><br />
+					&nbsp;&nbsp;&nbsp;&nbsp;<label>每用户上传带宽:</label>
+				<input id="eachLimitOutgoing" name="eachLimitOutgoing" type="text"
+					data-options="required:true" /><br />
+					
+			</div>
+			<div class="fitem">
+				<label>开放开始时间:</label>
+				<input id="startTime" class="easyui-timespinner"  name="startTime"
+        required="required" data-options="min:'00:00',showSeconds:true" />
+			</div>
+			<div class="fitem">
+				<label>开放结束时间:</label>
+				<input id="endTime" class="easyui-timespinner"  name="endTime"
+        required="required" data-options="min:'00:00',showSeconds:true" />
+			</div>
+			<div class="fitem">
+				<label>gatewayID:</label>
+				<input id="gateWayID" name="gateWayID" type="text"/>
+			</div>
+			<div class="fitem">
+				<label>重定向页面:</label>
+				<input id="portalUrl" name="portalUrl" type="text"/>
+			</div>
+			
+			<div class="fitem">
+				<label>是否激活:</label>
+				<input style="width: 20px;" id="nodeStatus" name="nodeStatus"
+					type="radio" value="0" data-options="required:true"
+					checked="true"> 是 &nbsp;&nbsp;&nbsp;&nbsp; <input
+					style="width: 20px;" id="nodeStatus" name="nodeStatus" type="radio"
+					value="1" data-options="required:true"> 否
+			</div>
+			
+			<div class="fitem">
+				<label>认证方式:</label>
+					<select id="loginType" class="easyui-combobox" name="loginType" style="width:200px;">  
+   					<option value="0">不需认证</option>  
+   					<option value="1">用户认证</option>
+   					<option value="2">短信验证码认证</option>
+				</select>
+			</div>
+			<div class="fitem">
+				<label>厂家:</label>
+				<input id="venderUser" name="venderUser"/>  
+			</div>
+			<div class="fitem">
+				<label>商家:</label>
+				<input id="businessUser" name="businessUser"/>  
+			</div>
+		</form>
+	</div>
+	<div id="ddlg-button">
+		<a href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-ok" onClick="saveNewNode()">增加</a> <a
+			href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-cancel" onClick="javascript:$('#ddlg').dialog('close')">取消</a>
+	</div>
+</body>
+</html>

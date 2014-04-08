@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd 
+           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.2.xsd"
+	default-lazy-init="false">
+
+	<bean id="wifidogDataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+		<property name="url" value="${jdbc.wifidog.horizon.url}"/>
+		<property name="username" value="${jdbc.wifidog.horizon.username}"/>
+		<property name="password" value="${jdbc.wifidog.horizon.password}"/>
+		<property name="initialSize" value="${jdbc.wifidog.horizon.initialSize}"/><!-- 初始化连接数 -->
+		<property name="minIdle" value="${jdbc.wifidog.horizon.minIdle}"/> <!-- 最小连接数 -->
+		<property name="maxActive" value="${jdbc.wifidog.horizon.maxActive}"/> <!-- 最大连接数 -->
+		<property name="maxWait" value="${jdbc.wifidog.horizon.maxWait}"/> <!-- 获取连接timeout -->
+		<property name="removeAbandoned" value="${jdbc.wifidog.horizon.removeAbandoned}" /> 
+		<property name="removeAbandonedTimeout" value="${jdbc.wifidog.horizon.removeAbandonedTimeout}" />
+		<property name="timeBetweenEvictionRunsMillis" value="${jdbc.wifidog.horizon.timeBetweenEvictionRunsMillis}"/> <!-- 空闲连接回收线程运行的时间间隔 -->
+		<property name="minEvictableIdleTimeMillis" value="${jdbc.wifidog.horizon.minEvictableIdleTimeMillis}"/> <!-- 连接池中连接可空闲的时间,毫秒  -->
+		<property name="validationQuery" value="${jdbc.wifidog.horizon.validationQuery}"/> <!-- 测试语句 -->
+		<property name="testWhileIdle" value="${jdbc.wifidog.horizon.testWhileIdle}"/>
+		<property name="testOnBorrow" value="${jdbc.wifidog.horizon.testOnBorrow}"/>
+		<property name="testOnReturn" value="${jdbc.wifidog.horizon.testOnReturn}"/>
+	</bean>
+
+	<bean id="wifidogSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="wifidogDataSource" />
+		<property name="mapperLocations" value="classpath:com/kechuang/wifidog/horizon/dao/impl/*.xml" />
+	</bean>
+
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.kechuang.wifidog.horizon.dao" />
+		<property name="sqlSessionFactoryBeanName" value="wifidogSqlSessionFactory" />
+	</bean>
+
+	<bean id="wifidogTransactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="wifidogDataSource" />
+	</bean>
+
+	<tx:annotation-driven transaction-manager="wifidogTransactionManager"
+		mode="proxy" proxy-target-class="true" />
+
+</beans> 

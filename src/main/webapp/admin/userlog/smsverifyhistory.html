@@ -1,0 +1,554 @@
+<link href="../../jslib/bootstrap-2.3.1/css/bootstrap.min.css"
+	rel="stylesheet" media="screen">
+<link id="easyuiTheme" rel="stylesheet"
+	href="../../jslib/jquery-easyui-1.3.4/themes/bootstrap/easyui.css"
+	type="text/css">
+<link id="easyuiTheme" rel="stylesheet"
+	href="../../jslib/jquery-easyui-1.3.4/themes/icon.css" type="text/css">
+<script type="text/javascript" src="../../jslib/jquery-2.0.0.js"
+	charset="utf-8"></script>
+<script type="text/javascript"
+	src="../../jslib/jquery-easyui-1.3.4/jquery.easyui.min.js"
+	charset="utf-8"></script>
+<script type="text/javascript"
+	src="../../jslib/jquery-easyui-1.3.4/locale/easyui-lang-zh_CN.js"
+	charset="utf-8"></script>
+<script type="text/javascript" src="../../jslib/extEasyUI.js"
+	charset="utf-8"></script>
+
+<script src="../../js/common/common.js"></script>
+
+<html>
+<head>
+<title>短信验证统计</title>
+<style type="text/css">
+#fm {
+	margin: 0;
+	padding: 10px 10px;
+}
+
+#fmm {
+	margin: 0;
+	padding: 10px 10px;
+}
+
+.ftitle {
+	font-size: 14px;
+	font-weight: bold;
+	padding: 5px 0;
+	margin-bottom: 10px;
+	border-bottom: 1px solid #ccc;
+}
+
+.fitem {
+	margin-bottom: 5px;
+}
+
+.fitem label {
+	display: inline-block;
+	width: 60px;
+}
+</style>
+<script type="text/javascript">
+	var listSmsSecurityCode;
+	$(function() {
+		$.extend($.fn.validatebox.defaults.rules, {
+		    CHS: {
+		        validator: function (value, param) {
+		            return /^[\u0391-\uFFE5]+$/.test(value);
+		        },
+		        message: '请输入汉字'
+		    },
+		    ZIP: {
+		        validator: function (value, param) {
+		            return /^[1-9]\d{5}$/.test(value);
+		        },
+		        message: '邮政编码不存在'
+		    },
+		    QQ: {
+		        validator: function (value, param) {
+		            return /^[1-9]\d{4,10}$/.test(value);
+		        },
+		        message: 'QQ号码不正确'
+		    },
+		    mobile: {
+		        validator: function (value, param) {
+		            return /^((\(\d{2,3}\))|(\d{3}\-))?13\d{9}$/.test(value);
+		        },
+		        message: '手机号码不正确'
+		    },
+		    loginName: {
+		        validator: function (value, param) {
+		            return /^[\u0391-\uFFE5\w]+$/.test(value);
+		        },
+		        message: '登录名称只允许汉字、英文字母、数字及下划线。'
+		    },
+		    safepass: {
+		        validator: function (value, param) {
+		            return safePassword(value);
+		        },
+		        message: '密码由字母和数字组成，至少6位'
+		    },
+		    equalTo: {
+		        validator: function (value, param) {
+		            return value == $(param[0]).val();
+		        },
+		        message: '两次输入的字符不一至'
+		    },
+		    number: {
+		        validator: function (value, param) {
+		            return /^\d+$/.test(value);
+		        },
+		        message: '请输入数字'
+		    },
+		    idcard: {
+		        validator: function (value, param) {
+		            return idCard(value);
+		        },
+		        message:'请输入正确的身份证号码'
+		    }
+		});
+
+		/* 密码由字母和数字组成，至少6位 */
+		var safePassword = function (value) {
+		    return !(/^(([A-Z]*|[a-z]*|\d*|[-_\~!@#\$%\^&\*\.\(\)\[\]\{\}<>\?\\\/\'\"]*)|.{0,5})$|\s/.test(value));
+		}
+
+		var idCard = function (value) {
+		    if (value.length == 18 && 18 != value.length) return false;
+		    var number = value.toLowerCase();
+		    var d, sum = 0, v = '10x98765432', w = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2], a = '11,12,13,14,15,21,22,23,31,32,33,34,35,36,37,41,42,43,44,45,46,50,51,52,53,54,61,62,63,64,65,71,81,82,91';
+		    var re = number.match(/^(\d{2})\d{4}(((\d{2})(\d{2})(\d{2})(\d{3}))|((\d{4})(\d{2})(\d{2})(\d{3}[x\d])))$/);
+		    if (re == null || a.indexOf(re[1]) < 0) return false;
+		    if (re[2].length == 9) {
+		        number = number.substr(0, 6) + '19' + number.substr(6);
+		        d = ['19' + re[4], re[5], re[6]].join('-');
+		    } else d = [re[9], re[10], re[11]].join('-');
+		    if (!isDateTime.call(d, 'yyyy-MM-dd')) return false;
+		    for (var i = 0; i < 17; i++) sum += number.charAt(i) * w[i];
+		    return (re[2].length == 9 || number.charAt(17) == v.charAt(sum % 11));
+		}
+
+		var isDateTime = function (format, reObj) {
+		    format = format || 'yyyy-MM-dd';
+		    var input = this, o = {}, d = new Date();
+		    var f1 = format.split(/[^a-z]+/gi), f2 = input.split(/\D+/g), f3 = format.split(/[a-z]+/gi), f4 = input.split(/\d+/g);
+		    var len = f1.length, len1 = f3.length;
+		    if (len != f2.length || len1 != f4.length) return false;
+		    for (var i = 0; i < len1; i++) if (f3[i] != f4[i]) return false;
+		    for (var i = 0; i < len; i++) o[f1[i]] = f2[i];
+		    o.yyyy = s(o.yyyy, o.yy, d.getFullYear(), 9999, 4);
+		    o.MM = s(o.MM, o.M, d.getMonth() + 1, 12);
+		    o.dd = s(o.dd, o.d, d.getDate(), 31);
+		    o.hh = s(o.hh, o.h, d.getHours(), 24);
+		    o.mm = s(o.mm, o.m, d.getMinutes());
+		    o.ss = s(o.ss, o.s, d.getSeconds());
+		    o.ms = s(o.ms, o.ms, d.getMilliseconds(), 999, 3);
+		    if (o.yyyy + o.MM + o.dd + o.hh + o.mm + o.ss + o.ms < 0) return false;
+		    if (o.yyyy < 100) o.yyyy += (o.yyyy > 30 ? 1900 : 2000);
+		    d = new Date(o.yyyy, o.MM - 1, o.dd, o.hh, o.mm, o.ss, o.ms);
+		    var reVal = d.getFullYear() == o.yyyy && d.getMonth() + 1 == o.MM && d.getDate() == o.dd && d.getHours() == o.hh && d.getMinutes() == o.mm && d.getSeconds() == o.ss && d.getMilliseconds() == o.ms;
+		    return reVal && reObj ? d : reVal;
+		    function s(s1, s2, s3, s4, s5) {
+		        s4 = s4 || 60, s5 = s5 || 2;
+		        var reVal = s3;
+		        if (s1 != undefined && s1 != '' || !isNaN(s1)) reVal = s1 * 1;
+		        if (s2 != undefined && s2 != '' && !isNaN(s2)) reVal = s2 * 1;
+		        return (reVal == s1 && s1.length != s5 || reVal > s4) ? -10000 : reVal;
+		    }
+		};
+		
+		$('#lastTime').combobox({
+			url : 'time_select.json',
+			valueField : 'id',
+			textField : 'text'
+		});
+		$('#startTime').datebox({
+			required : false,
+			editable : false
+		});
+		$('#endTime').datebox({
+			required : false,
+			editable : false
+		});
+		
+		$('#listSmsSecurityCode').datagrid(
+				{
+					url : getBasePath() + "/admin/searchSmsSecurityCode",
+					fit : true,
+					fitColumns : true,
+					border : false,
+					idField : 'id',
+					nowrap : false,
+					remoteSort : false,
+					singleSelect : false,//是否单选  
+					pagination : true,//分页控件  
+					rownumbers : true,//行号  
+					pageSize : 20,
+					queryParams : {
+						mobileType : '-1'
+					},
+					frozenColumns : [ [ {
+						field : 'userName',
+						title : '商家',
+						width : 100,
+						sortable : false
+					} ] ],
+					columns : [ [{
+						field : 'ndName',
+						title : '热点名',
+						width : 100,
+						sortable : false
+					},{
+								field : 'cellPhoneNum',
+								title : '手机号码',
+								width : 100,
+								sortable : false
+							},
+							{
+								field : 'mobileType',
+								title : '运营商',
+								width : 100,
+								sortable : false,
+								formatter : function(value, row, index) {
+									if (value == 1) {
+										return '中国移动';
+									} else if (value == 2) {
+										return '中国联通';
+									} else if (value == 3) {
+										return '中国电信';
+									} else {
+										return '未知运营商';
+									}
+								}
+							},
+							{
+								field : 'createTime',
+								title : '时间',
+								width : 100,
+								sortable : false,
+								formatter : function(value, row, index) {
+									var d = new Date(value);
+									/* return d.toLocaleDateString() + "   "
+											+ d.toLocaleTimeString(); */
+									return d.format("yyyy-MM-dd HH:mm:ss");
+								}
+							},{
+								field : 'status',
+								title : '状态',
+								width : 100,
+								sortable : false,
+								formatter : function(value, row, index) {
+									if (value == 1) {
+										return '已登录';
+									} else if (value == 2) {
+										return '未登录';
+									} else {
+										return '未知状态';
+									}
+								}
+							},{
+								field : 'id',
+								title : '操作',
+								width : 100,
+								sortable : false,
+								formatter : function(value, row, index) {
+									return "<a href='#' onclick=detailInfo("
+											+ JSON.stringify(row) + ")>详情</a>";
+								}
+							} ] ],
+					toolbar : '#toolbar',
+					onSelect : function() {
+						$(this).datagrid('clearSelections');
+					}
+				});
+		
+		//设置分页控件  
+		var p = $('#listSmsSecurityCode').datagrid('getPager');
+		$(p).pagination({
+			pageSize : 20,//每页显示的记录条数，默认为10  
+			pageList : [ 20, 25, 30 ],//可以设置每页记录条数的列表  
+			beforePageText : '第',//页数文本框前显示的汉字  
+			afterPageText : '页    共 {pages} 页',
+			displayMsg : '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+		/*onBeforeRefresh:function(){ 
+		    $(this).pagination('loading'); 
+		    alert('before refresh'); 
+		    $(this).pagination('loaded'); 
+		}*/
+		});
+		
+	});
+
+	function destroyNode() {
+		var row = $('#listSmsSecurityCode').datagrid('getSelected');
+		if (row) {
+			$.messager.confirm('Confirm', '你确定要删除此用户吗?', function(r) {
+				if (r) {
+					$.post(getBasePath() + "/node/deleteNode", {
+						id : row.id
+					}, function(data) {
+						var result = $.parseJSON(data);
+						if (result.success == false) {
+							$.messager.show({
+								title : 'Error',
+								msg : result.msg
+							});
+						} else {
+							$('#listSmsSecurityCode').datagrid('reload');
+							$('#listSmsSecurityCode').datagrid('clearSelections');
+						}
+					}, 'json');
+				}
+			});
+		}
+	}
+
+	function detailInfo(row) {
+		var table = $('#detailConnect');
+		table.empty();
+		var tr = $("<tr><th>属性</th><th>值</th><tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>IP地址:</td><td>" + row.ip + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>状态:</td><td>" + (row.status == 0 ? "离线" : "在线") + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>热点名:</td><td>" + row.ndName + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>mac地址:</td><td>" + row.mac + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>手机号码:</td><td>" + (row.cellPhoneNum == null ? "" : row.cellPhoneNum) + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>连接用户:</td><td>" + (row.userName == null ? "" : row.userName) + "</td></tr>");
+		tr.appendTo(table);
+		/* tr = $("<tr><td>身份认证:</td><td>" + row.identity + "</td></tr>");
+		tr.appendTo(table); */
+		tr = $("<tr><td>下载带宽:</td><td>" + row.incoming + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>上传带宽:</td><td>" + row.outgoing + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>总下载带宽:</td><td>" + row.totalIncoming + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>总上传带宽:</td><td>" + row.totalOutgoing + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>开始时间:</td><td>" + new Date(row.connectStart).format("yyyy-MM-dd HH:mm:ss") + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>中止时间:</td><td>" + new Date(row.connectEnd).format("yyyy-MM-dd HH:mm:ss") + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>总共用时:</td><td>" + ((row.connectEnd-row.connectStart)/1000/60) + "分钟</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>连接设备:</td><td>" + (row.device == null ? "" : row.device) + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>外网IP:</td><td>" + (row.webIp == null ? "" : row.webIp) + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>连接类型:</td><td>" + (row.connectTypeName == null ? "" : row.connectTypeName) + "</td></tr>");
+		tr.appendTo(table);
+		$('#dlg').dialog('open').dialog('setTitle', '详细连接信息');
+	}
+
+	function editNode() {
+		var row = $('#listSmsSecurityCode').datagrid('getSelected');
+		if (row) {
+			$('#dlg').dialog('open').dialog('setTitle', '修改');
+			$('#fm').form('load', row);
+
+			$('#venderUserEdit').combobox({
+				url : getBasePath() + "/node/listUser?userType=1",
+				valueField : 'id',
+				textField : 'companyName'
+			});
+			$('#businessUserEdit').combobox({
+				url : getBasePath() + "/node/listUser?userType=2",
+				valueField : 'id',
+				textField : 'companyName'
+			});
+		}
+
+	}
+
+	function saveEditNode() {
+		$('#fm').form('submit', {
+			url : getBasePath() + "/node/editNode",
+			onSubmit : function() {
+				return $(this).form('validate');
+			},
+			success : function(data) {
+				var result = $.parseJSON(data);
+				if (result.success == false) {
+					$.messager.show({
+						title : 'Error',
+						msg : result.msg
+					});
+				} else {
+					$('#dlg').dialog('close');
+					$('#listSmsSecurityCode').datagrid('reload');
+					$('#listSmsSecurityCode').datagrid('clearSelections');
+				}
+			}
+		});
+	}
+
+	function addNode() {
+		$('#ddlg').dialog('open').dialog('setTitle', '新增');
+		$('#venderUser').combobox({
+			url : getBasePath() + "/node/listUser?userType=1",
+			valueField : 'id',
+			textField : 'companyName'
+		});
+		$('#businessUser').combobox({
+			url : getBasePath() + "/node/listUser?userType=2",
+			valueField : 'id',
+			textField : 'companyName'
+		});
+		/* $('#user_id').combobox({
+			url : getBasePath()+"/user/all",
+			editable : false,
+			valueField :'user_id',
+			textField : 'user_id',
+			multiple : false,
+			onSelect:function(data){
+			}		
+		});
+		$('#v_user_id').combobox({
+			url : getBasePath()+"/v_user/get_all_hive_db",
+			editable : false,
+			valueField :'hive_db',
+			textField : 'hive_db',
+			multiple : false,
+			onSelect:function(data){
+			}		
+		}); */
+	}
+
+	function saveNewNode() {
+		$('#fmm').form('submit', {
+			url : getBasePath() + "/node/addNode",
+			onSubmit : function() {
+				return $(this).form('validate');
+			},
+			success : function(data) {
+				/* var result = eval('('+result+')'); */
+				var result = $.parseJSON(data);
+				if (result.success == false) {
+					$.messager.show({
+						title : 'Error',
+						msg : result.msg
+					});
+				} else {
+					$('#ddlg').dialog('close');
+					$('#listSmsSecurityCode').datagrid('reload');
+					$('#listSmsSecurityCode').datagrid('clearSelections');
+				}
+			}
+		});
+	}
+
+	function searchSmsSecurityCode(value, name) {
+		var parameters = new Object();
+		var lastTime = $('#lastTime').combobox('getValue');
+		if (lastTime != null && lastTime != '' && lastTime != 'other') {
+			parameters.lastTime = lastTime;
+		} else {
+			var startTime = $('#startTime').datetimebox('getValue');
+			var endTime = $('#endTime').datetimebox('getValue');
+
+			if (startTime != null && startTime != '') {
+				parameters.startTime = startTime;
+			}
+
+			if (endTime != null && endTime != '') {
+				parameters.endTime = endTime;
+			}
+		}
+
+		var userName = $('#userNameSearch').val();
+
+		if (userName != null && userName != '') {
+			parameters.userName = userName;
+		}
+		
+		if (name == '中国移动') {
+			parameters.mobileType = '1';
+		} else if (name == '中国联通') {
+			parameters.mobileType = '2';
+		} else if (name == '中国电信') {
+			parameters.mobileType = '3';
+		} else {
+			parameters.mobileType = '-1';
+		}
+		
+
+		if (value != null && value != '') {
+			parameters.cellPhoneNum = value;
+		}
+
+		/* parameters.pageNumber = 1;
+		parameters.pageSize = 10;
+		 $.post(getBasePath() + "/business/searchLog", parameters, function(result) {
+			if (result.success) {
+				$('#listSmsSecurityCode').datagrid('loadData', result.obj); // reload the user data
+			} else {
+				$.messager.alert("错误", result.msg, 'error');
+			}
+		}, 'json');  */
+		 $('#listSmsSecurityCode').datagrid('load', parameters); 
+	}
+</script>
+</head>
+<body>
+	<div class="easyui-layout"
+		style="width: 600PX; height: 500PX; border-left: 0px; MARGIN-LEFT: -1PX;"
+		data-options="fit : true,border : false">
+		<div data-options="region:'center',border:false"
+			style="border-left: 0px; margin-left: -1px;">
+			<table id="listSmsSecurityCode"></table>
+		</div>
+	</div>
+
+	<div id="toolbar" style="display: none;">
+		<div style="float: left">
+			<!-- <a onclick="addJob();" href="javascript:void(0);"
+				class="easyui-linkbutton"
+				data-options="plain:true,iconCls:'icon-add'">添加</a> <a
+				onclick="editJob()" href="javascript:void(0)"
+				class="easyui-linkbutton" plain="true" iconCls="icon-edit"> 修改</a> <a
+				onclick="destroyJob()" href="javascript:void(0)"
+				class="easyui-linkbutton" plain="true" iconCls="icon-remove">删除</a> -->
+			<table style="clear: both; display: block;" width="887" border="0"
+				cellspacing="0" cellpadding="0">
+				<tr>
+					<td width="887"><label>&nbsp;&nbsp;过去 </label> <input
+						id="lastTime" name="lastTime" style="width: 100px; height: 24px;"
+						data-options="editable:false,required:true" /> &nbsp;&nbsp;<label>&nbsp;&nbsp;或&nbsp;从</label>
+						<input id="startTime" type="text" name="startTime"
+						style="width: 150px; height: 26px;"></input> <label>&nbsp;&nbsp;到&nbsp;</label>
+						<input id="endTime" type="text" name="endTime"
+						style="width: 150px; height: 24px;"></input> 
+						<label>&nbsp;&nbsp;用户&nbsp;&nbsp;
+					</label> 
+						<!-- <input id="userNameSearch" name="userName" type="text"
+						style="margin-top: 5px;width: 150px;"/> -->
+						<input id="userNameSearch" name="userName" class="easyui-validatebox"/>
+
+						<div style="margin-top: -25px; margin-left: 750px">
+							<input id="search" class="easyui-searchbox"
+								data-options="prompt:'请输入手机号码',menu:'#searchMenu',searcher:searchSmsSecurityCode"></input>
+							<div id="searchMenu" style="width: 50px;">
+								<div data-options="name:'-1'">全部</div>
+								<div data-options="name:'1'">中国移动</div>
+								<div data-options="name:'2'">中国联通</div>
+								<div data-options="name:'3'">中国电信</div>
+							</div>
+						</div></td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	<div id="dlg" class="easyui-dialog"
+		style="width: 450px; height: 600px; padding: 10px 20px" closed="true"
+		buttons="#dlg-button">
+		<div class="ftitle">连接信息</div>
+		<table id="detailConnect" style="width: 300px"></table>
+	</div>
+</body>
+</html>

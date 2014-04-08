@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kechuang.wifidog.horizon.dao.TokensDao">
+	<resultMap id="BaseResultMap" type="com.kechuang.wifidog.horizon.model.Tokens">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="token" property="token" jdbcType="VARCHAR" />
+		<result column="node_id" property="nodeID" jdbcType="BIGINT" />
+		<result column="user_id" property="userID" jdbcType="BIGINT" />
+		<result column="status" property="status" jdbcType="TINYINT" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, token, node_id, user_id, status
+	</sql>
+	<select id="selectByMap" resultMap="BaseResultMap"
+		parameterType="map">
+		select
+		<include refid="Base_Column_List" />
+		from horizon_tokens
+		where 1=1
+		<if test="id != -1">
+			and id = #{id,jdbcType=BIGINT}
+		</if>
+		<if test="token != null">
+			and token = #{token,jdbcType=VARCHAR}
+		</if>
+		limit 1;
+
+	</select>
+	<select id="getTotalCount" resultType="java.lang.Long">
+		select count(*)
+		from
+		horizon_tokens
+	</select>
+
+	<select id="listAllTokens" resultMap="BaseResultMap"
+		parameterType="map">
+		select
+		<include refid="Base_Column_List" />
+		from horizon_tokens limit #{limit, jdbcType=BIGINT} offset #{offset,
+		jdbcType=BIGINT}
+	</select>
+	<delete id="deleteByMap" parameterType="map">
+		delete from
+		horizon_tokens
+		where 1=1
+		<if test="id != -1">
+			and id = #{id,jdbcType=BIGINT}
+		</if>
+		<if test="token != null">
+			and token = #{token,jdbcType=VARCHAR}
+		</if>
+		<if test="status != -1">
+			and status = #{status,jdbcType=TINYINT}
+		</if>
+	</delete>
+	<insert id="insert" parameterType="com.kechuang.wifidog.horizon.model.Tokens"  useGeneratedKeys="true" keyProperty="id">
+		insert into horizon_tokens
+		(id,
+		token, node_id, user_id, status)
+		values
+		(#{id,jdbcType=BIGINT},
+		#{token,jdbcType=VARCHAR} ,
+		#{nodeID,jdbcType=BIGINT} ,
+		#{userID,jdbcType=BIGINT} ,
+		#{status,jdbcType=TINYINT})
+	</insert>
+	<insert id="insertSelective" parameterType="com.kechuang.wifidog.horizon.model.Tokens"  useGeneratedKeys="true" keyProperty="id">
+		insert into horizon_tokens
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="token != null">
+				token,
+			</if>
+			<if test="nodeID != -1">
+				node_id,
+			</if>
+			<if test="userID != -1">
+				user_id,
+			</if>
+			<if test="status != -1">
+				status,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="token != null">
+				#{token,jdbcType=VARCHAR},
+			</if>
+			<if test="nodeID != -1">
+				#{nodeID,jdbcType=BIGINT},
+			</if>
+			<if test="userID != -1">
+				#{userID,jdbcType=BIGINT},
+			</if>
+			<if test="status != -1">
+				#{status,jdbcType=TINYINT},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="com.kechuang.wifidog.horizon.model.Tokens">
+		update horizon_tokens
+		<set>
+			<if test="token != null">
+				token = #{token,jdbcType=VARCHAR},
+			</if>
+			<if test="nodeID != -1">
+				node_id = #{nodeID,jdbcType=BIGINT},
+			</if>
+			<if test="userID != -1">
+				user_id = #{userID,jdbcType=BIGINT},
+			</if>
+			<if test="status != -1">
+				status = #{status,jdbcType=TINYINT},
+			</if>
+		</set>
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="com.kechuang.wifidog.horizon.model.Tokens">
+		update
+		horizon_tokens
+		set token = #{token,jdbcType=VARCHAR},
+		node_id =
+		#{nodeID,jdbcType=BIGINT},
+		user_id =
+		#{userID,jdbcType=BIGINT},
+		status =
+		#{status,jdbcType=TINYINT}
+		where ID =
+		#{id,jdbcType=BIGINT}
+	</update>
+</mapper>

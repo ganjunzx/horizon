@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>登录页</title>
+<!-- <link href="../jslib/bootstrap-2.3.1/css/bootstrap.min.css"
+	rel="stylesheet" media="screen"/> -->
+<link id="easyuiTheme" rel="stylesheet"
+	href="../jslib/jquery-easyui-1.3.4/themes/bootstrap/easyui.css"
+	type="text/css" />
+<link id="easyuiTheme" rel="stylesheet"
+	href="../../jslib/jquery-easyui-1.3.4/themes/icon.css" type="text/css" />
+<script type="text/javascript" src="../../jslib/jquery-2.0.0.js"
+	charset="utf-8"></script>
+<script type="text/javascript"
+	src="../../jslib/jquery-easyui-1.3.4/jquery.easyui.min.js"
+	charset="utf-8"></script>
+<script type="text/javascript"
+	src="../../jslib/jquery-easyui-1.3.4/locale/easyui-lang-zh_CN.js"
+	charset="utf-8"></script>
+<script type="text/javascript" src="../../jslib/extEasyUI.js"
+	charset="utf-8"></script>
+<script src="../../jslib/hms.js"></script>
+<style>
+* {
+	padding: 0px;
+	margin: 0px;
+}
+
+body {
+	font-family: Arial, Helvetica, sans-serif;
+	background: url(../images/grass.jpg);
+	font-size: 13px;
+}
+
+img {
+	border: 0;
+}
+
+.lg {
+	width: 468px;
+	height: 468px;
+	margin: 100px auto;
+	background: url(../images/login_bg.png) no-repeat;
+}
+
+.lg_top {
+	height: 200px;
+	width: 468px;
+}
+
+.lg_main {
+	width: 400px;
+	height: 180px;
+	margin: 0 25px;
+}
+
+.lg_m_1 {
+	width: 290px;
+	height: 100px;
+	padding: 60px 55px 20px 55px;
+}
+
+.ur {
+	height: 37px;
+	border: 0;
+	color: #666;
+	width: 236px;
+	margin: 4px 28px;
+	background: url(../images/user.png) no-repeat;
+	padding-left: 10px;
+	font-size: 16pt;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+.pw {
+	height: 37px;
+	border: 0;
+	color: #666;
+	width: 236px;
+	margin: 4px 28px;
+	background: url(../images/password.png) no-repeat;
+	padding-left: 10px;
+	font-size: 16pt;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+.bn {
+	width: 330px;
+	height: 72px;
+	background: url(../images/enter.png) no-repeat;
+	border: 0;
+	display: block;
+	font-size: 18px;
+	color: #FFF;
+	font-family: Arial, Helvetica, sans-serif;
+	font-weight: bolder;
+}
+
+.lg_foot {
+	height: 80px;
+	width: 330px;
+	padding: 6px 68px 0 68px;
+}
+</style>
+<script type="text/javascript">
+function checkLogin(data) {// 检查是否登录超时
+if (data.logoutFlag) {
+	closeProgress();
+	alert('提示', "登录超时,点击确定重新登录.", 'error', login);
+	return false;
+	}
+	return true;
+}
+function progress(title, msg) {
+	var win = $.messager.progress({
+	title : title || 'Please waiting',
+	msg : msg || 'Loading data...'
+	});
+}
+
+
+function closeProgress() {
+	$.messager.progress('close');
+	}
+function login() {
+	try {
+	$('#errorTips').html('');
+	if ($("#userLogin").form('validate')) {
+	progress('Please waiting', 'Loading...');
+	$("#userLogin").form('submit', {
+	url : getBasePath() + '/user/core/login',
+	success : function(data) {
+	closeProgress();
+	var result = $.parseJSON(data);
+	if (result.success == true) {
+	window.location = "/horizon/innerIndex.html";
+	} else {
+	$('#errorTips').html('<font color="red">' + result.msg + '</font>');
+	}
+	},
+	error : function(response, textStatus, errorThrown) {
+	try {
+	closeProgress();
+	var data = $.parseJSON(response.responseText);
+	if (!checkLogin(data)) {
+	return false;
+	} else {
+	$('#errorTips').html('<font color="red">' + (data.msg || "请求出现异常,请联系管理员")+ '</font>');
+	}
+	} catch (e) {
+	$('#errorTips').html('<font color="red">请求出现异常,请联系管理员.</font>');
+	}
+	}
+	});
+	}
+	} catch (e) {
+	}
+	return false;
+	}
+	
+$(function() {
+	String msg = getUrlParam('msg');
+	if (msg != null && msg != '') {
+		$('#errorTips').html('<font color="red">' + msg + '</font>');
+	}
+}
+	</script>
+</head>
+<body class="b">
+	<div class="lg">
+	<form id="userLogin" action="" method="post">
+	<div class="lg_top"></div>
+	<div class="lg_main">
+	<div class="lg_m_1">
+	<input name="gateWayAddress" value="10.10.10.254" type="hidden"/> 
+	<input name="gateWayPort" value="2060" type="hidden"/> 
+	<input name="gw_id" value="Horizon1395467334526" type="hidden"/> 
+	<input name="ip" value="10.10.10.100" type="hidden"/> 
+	<input name="mac" value="08:00:27:CE:CB:BE" type="hidden"/> 
+	<input name="key" value="Ib363a8c" type="hidden"/> 
+	<input name="wwver" value="4.1" type="hidden"/> 
+	<input name="onlineUser" value="0" type="hidden"/> 
+	<input name="url" value="http://cn.bing.com/" type="hidden"/> 
+	<input name="loginType" value="WEB" type="hidden"/> 
+	<input name="userName" value="" class="ur easyui-validatebox" data-options="required:true,missingMessage:'用户名不能为空.'"/> 
+	<input name="password" type="password" class="pw easyui-validatebox" data-options="required:true,missingMessage:'密码不能为空.'"/>
+	<span id="errorTips" style="margin-left: 80px;height: 100px"></span>
+	</div>
+	</div>
+	<div class="lg_foot">
+	<input type="submit" value="Login In" class="bn"/>
+	</div>
+	</form>
+	</div>
+	</body>
+	</html>
+	

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>账户资产</title>
+<link href="../../jslib/bootstrap-2.3.1/css/bootstrap.min.css" rel="stylesheet" media="screen">
+<link id="easyuiTheme" rel="stylesheet" href="../../jslib/jquery-easyui-1.3.4/themes/bootstrap/easyui.css" type="text/css">
+<link id="easyuiTheme" rel="stylesheet" href="../../jslib/jquery-easyui-1.3.4/themes/icon.css" type="text/css">
+<script type="text/javascript" src="../../jslib/jquery-easyui-1.3.4/jquery.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="../../jslib/jquery-easyui-1.3.4/jquery.easyui.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="../../jslib/jquery-easyui-1.3.4/locale/easyui-lang-zh_CN.js" charset="utf-8"></script>
+<script type="text/javascript" src="../../jslib/extEasyUI.js" charset="utf-8"></script>
+
+<script src="../../js/common/common.js"></script>
+<style type="text/css">
+#smsTradeForm {
+	margin: 0;
+	padding: 10px 10px;
+}
+
+body,html{
+	margin: 0px;
+	padding:0px;
+	height:100%; 
+	width:100%;
+}
+
+.ftitle {
+	font-size: 14px;
+	font-weight: bold;
+	padding: 5px 0;
+	margin-bottom: 10px;
+	border-bottom: 1px solid #ccc;
+}
+
+.fitem {
+	margin-bottom: 5px;
+}
+
+.fitem label {
+	display: inline-block;
+	width: 60px;
+}
+</style>
+<script type="text/javascript">
+$(function() {
+	
+	smsTradeInfo();
+	$('#ndNameSearch').combobox({
+		url : getBasePath() + "/business/treeNode",
+		valueField : 'id',
+		textField : 'ndName'
+	});
+	
+	$('#ndNameSearch').combobox("setValue", -2);
+	
+	listSmsTrade = $('#listSmsTrade').datagrid({
+		url : getBasePath() + "/business/searchSmsTrade", 
+		fit : true, 
+		fitColumns : true,
+		border : false,
+		idField : 'id',
+		nowrap : false,
+		remoteSort : false,
+		singleSelect : false,//是否单选  
+		pagination : true,//分页控件  
+		rownumbers : true,//行号  
+		singleSelect : true,
+		pageSize : 10,
+		frozenColumns : [ [ {
+			field : 'createTime',
+			title : '创建时间',
+			width : 150,
+			sortable : false,
+			formatter : function(value, row, index) {
+				var d = new Date(value);
+				return d.format("yyyy-MM-dd HH:mm:ss");
+			}
+		} ] ],
+		columns : [ [ {
+			field : 'totalPrice',
+			title : '金额',
+			width : 30,
+			sortable : false,
+			formatter: function(value,row,index){
+				return value + '元';
+			}
+		}, {
+			field : 'applySms',
+			title : '授权短信总数',
+			width : 40,
+			sortable : true
+		}, {
+			field : 'status',
+			title : '授权状态',
+			width : 40,
+			sortable : true,
+			formatter: function(value,row,index){
+				if (value == 1) {
+					return '授权成功';
+				} else {
+					return '未知状态';
+				}
+			}
+		},{
+			field : 'ndName',
+			title : '授权热点',
+			width : 300,
+			sortable : false
+		}] ],
+		toolbar : '#toolbar'
+	});
+
+	//设置分页控件  
+	var p = $('#listSmsTrade').datagrid('getPager');
+	$(p).pagination({
+		pageSize : 10,//每页显示的记录条数，默认为10  
+		pageList : [ 10, 20, 30 ],//可以设置每页记录条数的列表  
+		beforePageText : '第',//页数文本框前显示的汉字  
+		afterPageText : '页    共 {pages} 页',
+		displayMsg : '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+	});
+
+});
+
+
+function smsTradeInfo() {
+	$.ajax({
+		type : "POST",
+		url : getBasePath() + "/business/acountInfo",
+		success : function(data) {
+			var result = $.parseJSON(data); 
+			if (result.success == false) {
+				$.messager.show({
+					title : 'Error',
+					msg : result.msg
+				});
+			} else {
+				$('#acount').html(result.obj + "元");
+			}
+		}
+	});
+}
+function searchSmsTrade() {
+	var parameters = new Object();
+	var startTime = $('#startTime').datetimebox('getValue');
+	var endTime = $('#endTime').datetimebox('getValue');
+
+	if (startTime != null && startTime != '') {
+		parameters.startTime = startTime;
+	}
+
+	if (endTime != null && endTime != '') {
+		parameters.endTime = endTime;
+	}
+
+	var ndName = $('#ndNameSearch').combobox('getValue');
+
+	if (ndName != null && ndName != '') {
+		parameters.ndName = ndName;
+	}
+	 $('#listSmsTrade').datagrid('load', parameters); 
+}
+
+function smsTrade() {
+		$('#smsTradeDlg').dialog('open').dialog('setTitle', '短信充值');
+		$('#smsTradeForm')[0].reset();
+		
+		$.ajax({
+			type : "POST",
+			url : getBasePath() + "/business/acountInfo",
+			success : function(data) {
+				var result = $.parseJSON(data);  
+				if (result.success == false) {
+					$.messager.show({
+						title : 'Error',
+						msg : result.msg
+					});
+				} else {
+					$('#remainAcount').html(result.obj + "元");
+				}
+			}
+		});
+		
+		$('#ndName').combobox({
+			url : getBasePath() + "/business/treeNode?type=1",
+			valueField : 'id',
+			textField : 'ndName'
+		});
+		
+		$('#smsPackage').combobox({
+			url : getBasePath() + "/business/smsPackage",
+			valueField : 'id',
+			textField : 'name'
+		});
+		
+}
+
+function saveSmsTrade() {
+	$('#smsTradeForm').form('submit', {
+		url : getBasePath() + "/business/smsTrade",
+		onSubmit : function() {
+			return $(this).form('validate');
+		},
+		success : function(data) {
+			/* var result = eval('('+result+')'); */
+			var result = $.parseJSON(data);
+			if (result.success == false) {
+				$.messager.show({
+					title : 'Error',
+					msg : result.msg
+				});
+			} else {
+				$('#smsTradeDlg').dialog('close');
+				$('#listSmsTrade').datagrid('reload');
+				$('#listSmsTrade').datagrid('clearSelections');
+				smsTradeInfo();
+			}
+		}
+	});
+}
+
+</script>
+</head>
+<body>
+<div id="cc" class="easyui-layout" style="width:100%;height:98%;overflow:auto" data-options="fit:true,border:false">    
+    <div data-options="region:'north',title:'短信授权'" style="height:66px;overflow:auto">
+    <div>
+    	<div class="fitem" style="margin-top: 10px;margin-left: 20px;">
+				<label style="width:80px;">账户总金额:</label> <span><font id="acount"></font></span>
+				<button type="button" class="btn btn-default" style="text-align:center;margin-left: 20px" onClick="smsTrade()">短信授权</button>
+			</div>
+    </div>
+    </div>
+    <div data-options="region:'center',title:'交易记录',split:false" style="padding:5px;padding-left:0px">
+		<div id="toolbar" style="display: none;">
+					<label>&nbsp;&nbsp;从</label>
+						<input id="startTime" name="startTime"
+						style="width: 150px; height: 26px;" class="easyui-datebox" data-options="required:false,editable:false"></input> <label>&nbsp;&nbsp;到&nbsp;</label>
+						<input id="endTime" name="endTime"
+						style="width: 150px; height: 24px;" class="easyui-datebox" data-options="required:false,editable:false"></input> <label>&nbsp;&nbsp;热点&nbsp;&nbsp;
+					</label> 
+						<input id="ndNameSearch" name="ndName"
+						style="width: 250px; height: 24px;"
+						data-options="editable:false,required:true" />   
+						
+						<a class="easyui-wobutton" style="margin-left:10px;" onClick="searchSmsTrade()">搜索</a>
+
+						<!-- <div style="margin-top: -25px; margin-left: 830px">
+							<input id="search" class="easyui-searchbox"
+								data-options="prompt:'请输入用户名',menu:'#searchMenu',searcher:searchLog"></input>
+							<div id="searchMenu" style="width: 50px;">
+								<div data-options="name:'-1'">全部日志</div>
+								<div data-options="name:'1'">在线日志</div>
+								<div data-options="name:'0'">离线日志</div>
+							</div>
+						</div> -->
+		</div>
+	<table id="listSmsTrade" style="margin-top: -2px;"></table>
+    </div>  
+</div>
+
+<div id="smsTradeDlg" class="easyui-dialog"
+		style="width: 320px; height: 350px; padding: 10px 20px" closed="true"
+		buttons="#smsTradeDlg-button">
+		<form id="smsTradeForm" method="POST" novalidate>
+			<div class="ftitle">短信授权</div>
+			<input id="tradeType" type="hidden" name="tradeType" value="1"/>
+			<div class="fitem">
+				<label>可用余额:</label> <span><font id="remainAcount"></font></span>
+			</div>
+			<div class="fitem">
+				<label>热点名:</label><input id="ndName" name="ndName"
+						style="width: 250px; height: 24px;"
+						data-options="editable:false,required:true" /> 
+			</div>
+			
+			<div class="fitem" style="margin-top:5px">
+				<label>短信套餐:</label> 
+					<input id="smsPackage" name="smsPackage"
+						style="width: 250px; height: 24px;"
+						data-options="editable:false,required:true" />
+			</div>
+		</form>
+	</div>
+	<div id="smsTradeDlg-button">
+		<a href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-ok" onClick="saveSmsTrade()">授权</a> <a
+			href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-cancel" onClick="javascript:$('#smsTradeDlg').dialog('close')">取消</a>
+	</div>
+	
+</body>
+</html>

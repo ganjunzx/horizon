@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kechuang.wifidog.horizon.dao.RouteStatusDao">
+	<resultMap id="BaseResultMap"
+		type="com.kechuang.wifidog.horizon.model.RouteStatus">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="node_id" property="nodeID" jdbcType="BIGINT" />
+		<result column="web_ip" property="webIp" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, node_id, web_ip, create_time
+	</sql>
+	<select id="selectByMap" resultMap="BaseResultMap"
+		parameterType="map">
+		select
+		<include refid="Base_Column_List" />
+		from horizon_route_status
+		where 1=1
+		<if test="id != -1">
+			and id = #{id, jdbcType=BIGINT}
+		</if>
+	</select>
+	<select id="listAllRouteStatus" resultMap="BaseResultMap"
+		parameterType="map">
+		select
+		<include refid="Base_Column_List" />
+		from horizon_route_status
+		where 1=1
+		<if test="nodeID != -1">
+			and node_id = #{nodeID, jdbcType=BIGINT}
+		</if>
+		order by create_time desc
+		<if test="limit != -1">
+			limit #{limit, jdbcType=BIGINT}
+		</if>
+		<if test="offset != -1">
+			offset #{offset,
+			jdbcType=BIGINT}
+		</if>
+
+	</select>
+
+	<select id="getTotalCount" resultType="java.lang.Long"
+		parameterType="map">
+		select
+		count(*)
+		from horizon_route_status
+		where 1=1
+		<if test="nodeID != -1">
+			and node_id = #{nodeID, jdbcType=BIGINT}
+		</if>
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+		delete from
+		horizon_route_status
+		where ID = #{id,jdbcType=BIGINT}
+	</delete>
+	<insert id="insert" parameterType="com.kechuang.wifidog.horizon.model.RouteStatus"  useGeneratedKeys="true" keyProperty="id">
+		insert into
+		horizon_route_status (id, node_id, web_ip, create_time)
+		values
+		(#{id,jdbcType=BIGINT}, 
+		#{nodeID,jdbcType=BIGINT},
+		#{webIp,jdbcType=VARCHAR},
+		#{createTime,jdbcType=TIMESTAMP})
+	</insert>
+	<insert id="insertSelective" parameterType="com.kechuang.wifidog.horizon.model.RouteStatus"  useGeneratedKeys="true" keyProperty="id">
+		insert into horizon_route_status
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="nodeID != -1">
+				node_id,
+			</if>
+			<if test="webIp != null">
+				web_ip,
+			</if>
+			<if test="createTime != -1">
+				create_time,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="nodeID != -1">
+				#{nodeID,jdbcType=BIGINT},
+			</if>
+			<if test="webIp != null">
+				#{webIp,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != -1">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="com.kechuang.wifidog.horizon.model.RouteStatus">
+		update horizon_route_status
+		<set>
+			<if test="nodeID != -1">
+				node_id = #{nodeID,jdbcType=BIGINT},
+			</if>
+			<if test="webIp != null">
+				web_ip = #{webIp,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != -1">
+				create_time = #{createTime,jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="com.kechuang.wifidog.horizon.model.RouteStatus">
+		update
+		horizon_route_status
+		set 
+		node_id =
+		#{nodeID,jdbcType=BIGINT},
+		web_ip =
+		#{webIp,jdbcType=VARCHAR},
+		create_time =
+		#{createTime,jdbcType=TIMESTAMP}
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+</mapper>

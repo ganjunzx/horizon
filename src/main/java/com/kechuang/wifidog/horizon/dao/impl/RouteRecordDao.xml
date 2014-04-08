@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kechuang.wifidog.horizon.dao.RouteRecordDao">
+	<resultMap id="BaseResultMap"
+		type="com.kechuang.wifidog.horizon.model.RouteRecord">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="node_id" property="nodeID" jdbcType="BIGINT" />
+		<result column="sys_uptime" property="sysUptime" jdbcType="BIGINT" />
+		<result column="sys_mem_free" property="sysMem" jdbcType="BIGINT" />
+		<result column="sys_load" property="sysLoad" jdbcType="FLOAT" />
+		<result column="wifidog_uptime" property="wifidogUptime"
+			jdbcType="BIGINT" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, node_id, sys_uptime, sys_mem_free,
+		sys_load, wifidog_uptime, create_time
+	</sql>
+	<select id="selectByMap" resultMap="BaseResultMap"
+		parameterType="map">
+		select
+		<include refid="Base_Column_List" />
+		from horizon_route_record
+		where 1=1
+		<if test="id != -1">
+			and id = #{id, jdbcType=BIGINT}
+		</if>
+	</select>
+	<select id="listAllRouteRecord" resultMap="BaseResultMap"
+		parameterType="map">
+		select
+		<include refid="Base_Column_List" />
+		from horizon_route_record
+		where 1=1
+		<if test="nodeID != -1">
+			and node_id = #{nodeID, jdbcType=BIGINT}
+		</if>
+		order by create_time desc
+		<if test="limit != -1">
+			limit #{limit, jdbcType=BIGINT}
+		</if>
+		<if test="offset != -1">
+			offset #{offset,
+			jdbcType=BIGINT}
+		</if>
+	</select>
+
+	<select id="getTotalCount" resultType="java.lang.Long"
+		parameterType="map">
+		select
+		count(*)
+		from horizon_route_record
+		where 1=1
+		<if test="node_id != -1">
+			and node_id = #{nodeID, jdbcType=BIGINT}
+		</if>
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+		delete from
+		horizon_route_record
+		where ID = #{id,jdbcType=BIGINT}
+	</delete>
+	<insert id="insert" parameterType="com.kechuang.wifidog.horizon.model.RouteRecord"  useGeneratedKeys="true" keyProperty="id">
+		insert into
+		horizon_route_record (id, node_id, sys_uptime, sys_mem_free,
+		sys_load, wifidog_uptime, create_time)
+		values
+		(#{id,jdbcType=BIGINT}, 
+		#{nodeID,jdbcType=BIGINT},
+		#{sysUptime,jdbcType=BIGINT},
+		#{sysMem,jdbcType=BIGINT},
+		#{sysLoad,jdbcType=FLOAT},
+		#{wifidogUptime,jdbcType=BIGINT},
+		#{createTime,jdbcType=TIMESTAMP})
+	</insert>
+	<insert id="insertSelective" parameterType="com.kechuang.wifidog.horizon.model.RouteRecord"  useGeneratedKeys="true" keyProperty="id">
+		insert into horizon_route_record
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="nodeID != -1">
+				node_id,
+			</if>
+			<if test="sysUptime != -1">
+				sys_uptime,
+			</if>
+			<if test="sysMem != -1">
+				sys_mem_free,
+			</if>
+			<if test="sysLoad != -1">
+				sys_load,
+			</if>
+			<if test="wifidogUptime != -1">
+				wifidog_uptime,
+			</if>
+			<if test="createTime != -1">
+				create_time,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="nodeID != -1">
+				#{nodeID,jdbcType=BIGINT},
+			</if>
+			<if test="sysUptime != -1">
+				#{sysUptime,jdbcType=BIGINT},
+			</if>
+			<if test="sysMem != -1">
+				#{sysMem,jdbcType=BIGINT},
+			</if>
+			<if test="sysLoad != -1">
+				#{sysLoad,jdbcType=FLOAT},
+			</if>
+			<if test="wifidogUptime != -1">
+				#{wifidogUptime,jdbcType=BIGINT},
+			</if>
+			<if test="createTime != -1">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="com.kechuang.wifidog.horizon.model.RouteRecord">
+		update horizon_route_record
+		<set>
+			<if test="nodeID != -1">
+				node_id = #{nodeID,jdbcType=BIGINT},
+			</if>
+			<if test="sysUptime != -1">
+				sys_uptime = #{sysUptime,jdbcType=BIGINT},
+			</if>
+			<if test="sysMem != -1">
+				sys_mem_free = #{sysMem,jdbcType=BIGINT},
+			</if>
+			<if test="sysLoad != -1">
+				sys_load = #{sysLoad,jdbcType=FLOAT},
+			</if>
+			<if test="wifidogUptime != -1">
+				wifidog_uptime = #{wifidogUptime,jdbcType=BIGINT},
+			</if>
+			<if test="createTime != -1">
+				create_time = #{createTime,jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="com.kechuang.wifidog.horizon.model.RouteRecord">
+		update
+		horizon_route_record
+		set 
+		node_id =
+		#{nodeID,jdbcType=BIGINT},
+		sys_uptime =
+		#{sysUptime,jdbcType=BIGINT},
+		sys_mem_free =
+		#{sysMem,jdbcType=BIGINT},
+		sys_load =
+		#{sysLoad,jdbcType=FLOAT},
+		wifidog_uptime =
+		#{wifidogUptime,jdbcType=BIGINT},
+		create_time =
+		#{createTime,jdbcType=TIMESTAMP}
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+</mapper>

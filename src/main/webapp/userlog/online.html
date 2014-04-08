@@ -1,0 +1,317 @@
+<link href="../jslib/bootstrap-2.3.1/css/bootstrap.min.css"
+	rel="stylesheet" media="screen">
+<link id="easyuiTheme" rel="stylesheet"
+	href="../jslib/jquery-easyui-1.3.4/themes/bootstrap/easyui.css"
+	type="text/css">
+<link id="easyuiTheme" rel="stylesheet"
+	href="../jslib/jquery-easyui-1.3.4/themes/icon.css" type="text/css">
+<script type="text/javascript" src="../jslib/jquery-2.0.0.js"
+	charset="utf-8"></script>
+<script type="text/javascript"
+	src="../jslib/jquery-easyui-1.3.4/jquery.easyui.min.js" charset="utf-8"></script>
+<script type="text/javascript"
+	src="../jslib/jquery-easyui-1.3.4/locale/easyui-lang-zh_CN.js"
+	charset="utf-8"></script>
+<script type="text/javascript" src="../jslib/extEasyUI.js"
+	charset="utf-8"></script>
+
+<script src="../jslib/hms.js"></script>
+
+<html>
+<head>
+<title>路由管理</title>
+<style type="text/css">
+#fm {
+	margin: 0;
+	padding: 10px 10px;
+}
+
+#fmm {
+	margin: 0;
+	padding: 10px 10px;
+}
+
+.ftitle {
+	font-size: 14px;
+	font-weight: bold;
+	padding: 5px 0;
+	margin-bottom: 10px;
+	border-bottom: 1px solid #ccc;
+}
+
+.fitem {
+	margin-bottom: 5px;
+}
+
+.fitem label {
+	display: inline-block;
+	width: 60px;
+}
+</style>
+<script type="text/javascript">
+	var listNode;
+	$(function() {
+		listNode = $('#listNode').datagrid({
+			url : getBasePath() + "/userlog/listLog?status=0",
+			fit : true,
+			fitColumns : true,
+			border : false,
+			idField : 'id',
+			nowrap : false,
+			remoteSort : false,
+			singleSelect : false,//是否单选  
+			pagination : true,//分页控件  
+			rownumbers : true,//行号  
+			frozenColumns : [ [ {
+				field : 'ndName',
+				title : '热点名',
+				width : 100,
+				sortable : false
+			} ] ],
+			columns : [ [ {
+				field : 'status',
+				title : '状态',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'mac',
+				title : 'mac地址',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'ip',
+				title : 'IP地址',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'identity',
+				title : '身份认证',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'incoming',
+				title : '下载带宽',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'outgoing',
+				title : '上传带宽',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'totalIncoming',
+				title : '总下载带宽',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'totalOutgoing',
+				title : '总上传带宽',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'connectStart',
+				title : '开始时间',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'connectEnd',
+				title : '中止时间',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'cellPhoneNum',
+				title : '手机号码',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'device',
+				title : '连接设备',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'webIp',
+				title : '外网IP',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'userName',
+				title : '连接用户',
+				width : 100,
+				sortable : false
+			}, {
+				field : 'connectType',
+				title : '连接类型',
+				width : 100,
+				sortable : false
+			}] ],
+			toolbar : '#toolbar'
+		});
+
+		//设置分页控件  
+		var p = $('#listNode').datagrid('getPager');
+		$(p).pagination({
+			pageSize : 10,//每页显示的记录条数，默认为10  
+			pageList : [ 5, 10, 15 ],//可以设置每页记录条数的列表  
+			beforePageText : '第',//页数文本框前显示的汉字  
+			afterPageText : '页    共 {pages} 页',
+			displayMsg : '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+		/*onBeforeRefresh:function(){ 
+		    $(this).pagination('loading'); 
+		    alert('before refresh'); 
+		    $(this).pagination('loaded'); 
+		}*/
+		});
+
+	});
+
+	function destroyNode() {
+		var row = $('#listNode').datagrid('getSelected');
+		if (row) {
+			$.messager.confirm('Confirm', '你确定要删除此用户吗?', function(r) {
+				if (r) {
+					$.post(getBasePath() + "/node/deleteNode", {
+						id : row.id
+					}, 
+					function(result) {
+						if (result.success == false) {
+							$.messager.show({
+								title : 'Error',
+								msg : result.msg
+							});
+						} else {
+							$('#listNode').datagrid('reload');
+							$('#listNode').datagrid('clearSelections');
+						}
+					}, 'json');
+				}
+			});
+		}
+	}
+
+	function editNode() {
+		var row = $('#listNode').datagrid('getSelected');
+		if (row) {
+			$('#dlg').dialog('open').dialog('setTitle', '修改');
+			$('#fm').form('load', row);
+			
+			$('#venderUserEdit').combobox({  
+			    url:getBasePath() + "/node/listUser?userType=VENDERUSER",  
+			    valueField:'id',  
+			    textField:'companyName'
+			});
+			$('#businessUserEdit').combobox({  
+			    url:getBasePath() + "/node/listUser?userType=BUSINESSUSER",  
+			    valueField:'id',  
+			    textField:'companyName'
+			});
+		}
+
+	}
+
+	function saveEditNode() {
+		$('#fm').form('submit', {
+			url : getBasePath() + "/node/editNode",
+			onSubmit : function() {
+				return $(this).form('validate');
+			},
+			success : function(data) {
+				var result = $.parseJSON(data);
+				if (result.success == false) {
+					$.messager.show({
+						title : 'Error',
+						msg : result.msg
+					});
+				} else {
+					$('#dlg').dialog('close');
+					$('#listNode').datagrid('reload');
+					$('#listNode').datagrid('clearSelections');
+				}
+			}
+		});
+	}
+
+	function addNode() {
+		$('#ddlg').dialog('open').dialog('setTitle', '新增');
+		$('#venderUser').combobox({  
+		    url:getBasePath() + "/node/listUser?userType=VENDERUSER",  
+		    valueField:'id',  
+		    textField:'companyName'
+		});
+		$('#businessUser').combobox({  
+		    url:getBasePath() + "/node/listUser?userType=BUSINESSUSER",  
+		    valueField:'id',  
+		    textField:'companyName'
+		});
+		/* $('#user_id').combobox({
+			url : getBasePath()+"/user/all",
+			editable : false,
+			valueField :'user_id',
+			textField : 'user_id',
+			multiple : false,
+			onSelect:function(data){
+			}		
+		});
+		$('#v_user_id').combobox({
+			url : getBasePath()+"/v_user/get_all_hive_db",
+			editable : false,
+			valueField :'hive_db',
+			textField : 'hive_db',
+			multiple : false,
+			onSelect:function(data){
+			}		
+		}); */
+	}
+
+	function saveNewNode() {
+		$('#fmm').form('submit', {
+			url : getBasePath() + "/node/addNode",
+			onSubmit : function() {
+				return $(this).form('validate');
+			},
+			success : function(data) {
+				/* var result = eval('('+result+')'); */
+				var result = $.parseJSON(data);
+				if (result.success == false) {
+					$.messager.show({
+						title : 'Error',
+						msg : result.msg
+					});
+				} else {
+					$('#ddlg').dialog('close');
+					$('#listNode').datagrid('reload');
+					$('#listNode').datagrid('clearSelections');
+				}
+			}
+		});
+	}
+</script>
+</head>
+<body>
+	<div class="easyui-layout"
+		style="width: 600PX; height: 500PX; border-left: 0px; MARGIN-LEFT: -1PX;"
+		data-options="fit : true,border : false">
+		<div data-options="region:'center',border:false"
+			style="border-left: 0px; margin-left: -1px;">
+			<table id="listNode"></table>
+		</div>
+	</div>
+
+	<div id="toolbar" style="display: none;">
+		<div style="float: left">
+		<a onClick="addNode();" href="javascript:void(0);"
+			class="easyui-linkbutton"
+			data-options="plain:true,iconCls:'icon-add'">添加</a> <a
+			onClick="editNode();" href="javascript:void(0)"
+			class="easyui-linkbutton" iconCls="icon-edit" plain="true">编辑</a> <a
+			onClick="destroyNode();" href="javascript:void(0)"
+			class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a>
+         </div>
+	</div>
+	<div id="dlg" class="easyui-dialog"
+		style="width: 450px; height: 600px; padding: 10px 20px" closed="true"
+		buttons="#dlg-button">
+			<div class="ftitle">连接信息</div>
+			<table id="detailConnect" style="width:300px"></table> 
+	</div>
+</body>
+</html>

@@ -1,0 +1,577 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kechuang.wifidog.horizon.dao.NodeDao">
+	<resultMap id="BaseResultMap" type="com.kechuang.wifidog.horizon.model.Node">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="node_name" property="ndName" jdbcType="VARCHAR" />
+		<result column="alias_name" property="aliasName" jdbcType="VARCHAR" />
+		<result column="mcode" property="mCode" jdbcType="VARCHAR" />
+		<result column="industry" property="industry" jdbcType="TINYINT" />
+		<result column="turn_off_time" property="turnOffTime" jdbcType="BIGINT" />
+		<result column="trun_off_free_time" property="turnOffFreeTime"
+			jdbcType="BIGINT" />
+		<result column="multi_terminal_login" property="multiTerminalLogin"
+			jdbcType="TINYINT" />
+		<result column="limit_speed" property="limitSpeed" jdbcType="TINYINT" />
+		<result column="total_limit_incoming" property="totalLimitIncoming"
+			jdbcType="BIGINT" />
+		<result column="total_limit_outgoing" property="totalLimitOutgoing"
+			jdbcType="BIGINT" />
+		<result column="each_limit_incoming" property="eachLimitIncoming"
+			jdbcType="BIGINT" />
+		<result column="each_limit_outgoing" property="eachLimitOutgoing"
+			jdbcType="BIGINT" />
+		<result column="start_time" property="startTime" jdbcType="TIME" />
+		<result column="end_time" property="endTime" jdbcType="TIME" />
+		<result column="portal_url" property="portalUrl" jdbcType="VARCHAR" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="login_type" property="loginType" jdbcType="TINYINT" />
+		<result column="node_status" property="nodeStatus" jdbcType="TINYINT" />
+		<result column="vender_id" property="venderID" jdbcType="BIGINT" />
+		<result column="business_id" property="businessID" jdbcType="BIGINT" />
+		<result column="limit_online_user_num" property="limitOnlineUserNum"
+			jdbcType="INTEGER" />
+		<result column="running" property="running" jdbcType="TINYINT" />
+		<result column="remain_sms" property="remainSms" jdbcType="BIGINT" />
+		<result column="sms_code_valid_time" property="smsCodeValidTime"
+			jdbcType="BIGINT" />
+			<result column="sms_code_valid_time_type" property="smsCodeValidTimeType" jdbcType="TINYINT" />
+		<result column="sms_type" property="smsType" jdbcType="TINYINT" />
+		<result column="sms_code_length" property="smsCodeLength"
+			jdbcType="INTEGER" />
+		<result column="sms_code_day_num" property="smsCodeDayNum"
+			jdbcType="INTEGER" />
+		<result column="sms_code_obtain_interval" property="smsCodeObtainInterval"
+			jdbcType="BIGINT" />
+			<result column="sms_content_id" property="smsContentID"
+			jdbcType="BIGINT" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, node_name, alias_name, mcode, industry,
+		turn_off_time,
+		trun_off_free_time, multi_terminal_login, limit_speed,
+		total_limit_incoming,
+		total_limit_outgoing, each_limit_incoming,
+		each_limit_outgoing, start_time,
+		end_time, portal_url,
+		update_time,
+		create_time, login_type,node_status, vender_id, business_id,
+		limit_online_user_num,running, remain_sms, sms_code_valid_time, sms_code_valid_time_type,
+		sms_type, sms_code_length, sms_code_day_num, sms_code_obtain_interval,sms_content_id
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Long">
+		select
+		<include refid="Base_Column_List" />
+		from horizon_node
+		where ID = #{id,jdbcType=BIGINT}
+	</select>
+	<select id="selectByMCode" resultMap="BaseResultMap"
+		parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from horizon_node
+		where mcode = #{mCode,jdbcType=VARCHAR}
+		limit 1
+	</select>
+	<select id="selectByNodeName" resultMap="BaseResultMap"
+		parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from horizon_node
+		where node_name = #{nodeName,jdbcType=VARCHAR}
+		limit 1
+	</select>
+	<!-- <select id="listAllNode" resultMap="BaseResultMap"> select <include 
+		refid="Base_Column_List" /> from horizon_node </select> -->
+	<select id="getTotalCount" resultType="java.lang.Long"
+		parameterType="map">
+		select count(*)
+		from
+		horizon_node
+		where 1=1
+		<if test="venderID != -1">
+			and vender_id = #{venderID, jdbcType=BIGINT}
+		</if>
+		<if test="startTime != null">
+			and create_time &gt;= #{startTime, jdbcType=TIMESTAMP}
+		</if>
+		<if test="endTime != null">
+			and create_time &lt;= date_add(#{endTime,
+			jdbcType=TIMESTAMP}, interval 1 day)
+		</if>
+		<if test="nodeStatus != -1">
+			and node_status = #{nodeStatus, jdbcType=TINYINT}
+		</if>
+		<if test="businessID != -1">
+			and business_id = #{businessID, jdbcType=TINYINT}
+		</if>
+		<if test="ndName != null">
+			and node_name = #{ndName, jdbcType=VARCHAR}
+		</if>
+	</select>
+	
+		<select id="getTotalRemainSms" resultType="java.lang.Long"
+		parameterType="map">
+		select sum(remain_sms)
+		from
+		horizon_node
+		where 1=1
+		<if test="startTime != null">
+			and create_time &gt;= #{startTime, jdbcType=TIMESTAMP}
+		</if>
+		<if test="endTime != null">
+			and create_time &lt;= date_add(#{endTime,
+			jdbcType=TIMESTAMP}, interval 1 day)
+		</if>
+		<if test="businessID != -1">
+			and business_id = #{businessID, jdbcType=TINYINT}
+		</if>
+		<if test="businessID == -1">
+			and business_id != -1
+		</if>
+		
+	</select>
+
+	<select id="listAllNode" resultMap="BaseResultMap"
+		parameterType="map">
+		select
+		<include refid="Base_Column_List" />
+		from horizon_node
+		where 1=1
+		<if test="venderID != -1">
+			and vender_id = #{venderID, jdbcType=BIGINT}
+		</if>
+		<if test="startTime != null">
+			and create_time &gt;= #{startTime, jdbcType=TIMESTAMP}
+		</if>
+		<if test="endTime != null">
+			and create_time &lt;= date_add(#{endTime,
+			jdbcType=TIMESTAMP}, interval 1 day)
+		</if>
+		<if test="nodeStatus != -1">
+			and node_status = #{nodeStatus, jdbcType=TINYINT}
+		</if>
+		<if test="businessID != -1">
+			and business_id = #{businessID, jdbcType=TINYINT}
+		</if>
+		<if test="ndName != null">
+			and node_name = #{ndName, jdbcType=VARCHAR}
+		</if>
+		<if test="limit != -1">
+			limit #{limit, jdbcType=BIGINT}
+		</if>
+		<if test="offset != -1">
+			offset #{offset,
+			jdbcType=BIGINT}
+		</if>
+
+	</select>
+
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+		delete from
+		horizon_node
+		where ID = #{id,jdbcType=BIGINT}
+	</delete>
+	<insert id="insert" parameterType="com.kechuang.wifidog.horizon.model.Node"  useGeneratedKeys="true" keyProperty="id">
+		insert into horizon_node (id,
+		node_name, alias_name, mcode, industry, turn_off_time,
+		trun_off_free_time, multi_terminal_login, limit_speed,
+		total_limit_incoming,
+		total_limit_outgoing, each_limit_incoming,
+		each_limit_outgoing, start_time,
+		end_time, portal_url,
+		update_time,
+		create_time, login_type,node_status,vender_id, business_id,
+		limit_online_user_num, running, remain_sms, sms_code_valid_time,sms_code_valid_time_type,
+		sms_type, sms_code_length, sms_code_day_num, sms_code_obtain_interval, sms_content_id)
+		values
+		(#{id,jdbcType=BIGINT},
+		#{ndName,jdbcType=VARCHAR} ,
+		#{aliasName,jdbcType=VARCHAR} ,
+		#{mCode,jdbcType=VARCHAR} ,
+		#{industry,jdbcType=TINYINT} ,
+		#{turnOffTime,jdbcType=BIGINT} ,
+		#{turnOffFreeTime,jdbcType=BIGINT} ,
+		#{multiTerminalLogin,jdbcType=TINYINT} ,
+		#{limitSpeed,jdbcType=TINYINT} ,
+		#{totalLimitIncoming,jdbcType=BIGINT}
+		,
+		#{totalLimitOutgoing,jdbcType=BIGINT} ,
+		#{eachLimitIncoming,jdbcType=BIGINT} ,
+		#{eachLimitOutgoing,jdbcType=BIGINT} , #{startTime,jdbcType=TIME} ,
+		#{endTime,jdbcType=TIME} ,
+		#{portalUrl,jdbcType=VARCHAR} ,
+		#{updateTime,jdbcType=TIMESTAMP}, #{createTime,jdbcType=TIMESTAMP},
+		#{loginType,jdbcType=TINYINT}, #{nodeStatus,jdbcType=TINYINT},
+		#{venderID,jdbcType=BIGINT},
+		#{businessID,jdbcType=BIGINT},
+		#{limitOnlineUserNum,jdbcType=INTEGER}, #{running,jdbcType=TINYINT},
+		#{remainSms,jdbcType=BIGINT}, #{smsCodeValidTime,jdbcType=BIGINT},#{smsCodeValidTimeType,jdbcType=TINYINT} ,
+		#{smsType,jdbcType=TINYINT}, #{smsCodeLength,jdbcType=INTEGER},
+		#{smsCodeDayNum,jdbcType=INTEGER}, #{smsCodeObtainInterval,jdbcType=BIGINT},
+		#{smsContentID,jdbcType=BIGINT})
+	</insert>
+	<insert id="insertSelective" parameterType="com.kechuang.wifidog.horizon.model.Node"  useGeneratedKeys="true" keyProperty="id">
+		insert into horizon_node
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="ndName != null">
+				node_name,
+			</if>
+			<if test="aliasName != null">
+				alias_name,
+			</if>
+			<if test="mCode != null">
+				mcode,
+			</if>
+			<if test="industry != -1">
+				industry,
+			</if>
+			<if test="turnOffTime != -1">
+				turn_off_time,
+			</if>
+			<if test="turnOffFreeTime != -1">
+				trun_off_free_time,
+			</if>
+			<if test="multiTerminalLogin !=-1">
+				multi_terminal_login,
+			</if>
+			<if test="limitSpeed != -1">
+				limit_speed,
+			</if>
+			<if test="totalLimitIncoming != -1">
+				total_limit_incoming,
+			</if>
+			<if test="totalLimitOutgoing != -1">
+				total_limit_outgoing,
+			</if>
+			<if test="eachLimitIncoming != -1">
+				each_limit_incoming,
+			</if>
+			<if test="eachLimitOutgoing != -1">
+				each_limit_outgoing,
+			</if>
+			<if test="startTime != null">
+				start_time,
+			</if>
+			<if test="endTime != null">
+				end_time,
+			</if>
+			<if test="portalUrl != null">
+				portal_url,
+			</if>
+			<if test="updateTime != null">
+				update_time,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="loginType != -1">
+				login_type,
+			</if>
+			<if test="nodeStatus != -1">
+				node_status,
+			</if>
+			<if test="venderID != -1">
+				vender_id,
+			</if>
+			<if test="businessID != -1">
+				business_id,
+			</if>
+			<if test="limitOnlineUserNum != -1">
+				limit_online_user_num,
+			</if>
+			<if test="running != -1">
+				running,
+			</if>
+			<if test="remainSms != -1">
+				remain_sms,
+			</if>
+			<if test="smsCodeValidTime != -1">
+				sms_code_valid_time,
+			</if>
+			<if test="smsCodeValidTimeType != -1">
+				sms_code_valid_time_type,
+			</if>
+			<if test="smsType != -1">
+				sms_type,
+			</if>
+			<if test="smsCodeLength != -1">
+				sms_code_length,
+			</if>
+			<if test="smsCodeDayNum != -1">
+				sms_code_day_num,
+			</if>
+			<if test="smsCodeObtainInterval != -1">
+				sms_code_obtain_interval,
+			</if>
+			<if test="smsContentID != -1">
+				sms_content_id,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="ndName != null">
+				#{ndName,jdbcType=VARCHAR},
+			</if>
+			<if test="aliasName != null">
+				#{aliasName,jdbcType=VARCHAR},
+			</if>
+			<if test="mCode != null">
+				#{mCode,jdbcType=VARCHAR},
+			</if>
+			<if test="industry != -1">
+				#{industry,jdbcType=TINYINT},
+			</if>
+			<if test="turnOffTime != -1">
+				#{turnOffTime,jdbcType=BIGINT},
+			</if>
+			<if test="turnOffFreeTime != -1">
+				#{turnOffFreeTime,jdbcType=BIGINT},
+			</if>
+			<if test="multiTerminalLogin != -1">
+				#{multiTerminalLogin,jdbcType=TINYINT},
+			</if>
+			<if test="limitSpeed != -1">
+				#{limitSpeed,jdbcType=TINYINT},
+			</if>
+			<if test="totalLimitIncoming != -1">
+				#{totalLimitIncoming,jdbcType=BIGINT},
+			</if>
+			<if test="totalLimitOutgoing != -1">
+				#{totalLimitOutgoing,jdbcType=BIGINT},
+			</if>
+			<if test="eachLimitIncoming != -1">
+				#{eachLimitIncoming,jdbcType=BIGINT},
+			</if>
+			<if test="eachLimitOutgoing != -1">
+				#{eachLimitOutgoing,jdbcType=BIGINT},
+			</if>
+			<if test="startTime != null">
+				#{startTime,jdbcType=TIME},
+			</if>
+			<if test="endTime != null">
+				#{endTime,jdbcType=TIME},
+			</if>
+			<if test="portalUrl != null">
+				#{portalUrl,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="loginType != -1">
+				#{loginType,jdbcType=TINYINT},
+			</if>
+			<if test="nodeStatus != -1">
+				#{nodeStatus,jdbcType=TINYINT},
+			</if>
+			<if test="venderID != -1">
+				#{venderID,jdbcType=BIGINT},
+			</if>
+			<if test="businessID != -1">
+				#{businessID,jdbcType=BIGINT},
+			</if>
+			<if test="limitOnlineUserNum != -1">
+				#{limitOnlineUserNum,jdbcType=BIGINT},
+			</if>
+			<if test="running != -1">
+				#{running,jdbcType=TINYINT},
+			</if>
+			<if test="remainSms != -1">
+				#{remainSms,jdbcType=BIGINT},
+			</if>
+			<if test="smsCodeValidTime != -1">
+				#{smsCodeValidTime,jdbcType=BIGINT},
+			</if>
+			<if test="smsCodeValidTimeType != -1">
+				#{smsCodeValidTimeType,jdbcType=TINYINT},
+			</if>
+			<if test="smsType != -1">
+				#{smsType,jdbcType=TINYINT},
+			</if>
+			<if test="smsCodeLength != -1">
+				#{smsCodeLength,jdbcType=INTEGER},
+			</if>
+			<if test="smsCodeDayNum != -1">
+				#{smsCodeDayNum,jdbcType=INTEGER},
+			</if>
+			<if test="smsCodeObtainInterval != -1">
+				#{smsCodeObtainInterval,jdbcType=BIGINT},
+			</if>
+			<if test="smsContentID != -1">
+				#{smsContentID,jdbcType=BIGINT},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="com.kechuang.wifidog.horizon.model.Node">
+		update horizon_node
+		<set>
+			<if test="ndName != null">
+				node_name = #{ndName,jdbcType=VARCHAR},
+			</if>
+			<if test="aliasName != null">
+				alias_name = #{aliasName,jdbcType=VARCHAR},
+			</if>
+			<if test="mCode != null">
+				mCode = #{mCode,jdbcType=VARCHAR},
+			</if>
+			<if test="industry != -1">
+				industry = #{industry,jdbcType=TINYINT},
+			</if>
+			<if test="turnOffTime != -1">
+				turn_off_time = #{turnOffTime,jdbcType=BIGINT},
+			</if>
+			<if test="turnOffFreeTime != -1">
+				trun_off_free_time = #{turnOffFreeTime,jdbcType=BIGINT},
+			</if>
+			<if test="multiTerminalLogin != -1">
+				multi_terminal_login =
+				#{multiTerminalLogin,jdbcType=TINYINT},
+			</if>
+			<if test="limitSpeed != -1">
+				limit_speed = #{limitSpeed,jdbcType=TINYINT},
+			</if>
+			<if test="totalLimitIncoming != -1">
+				total_limit_incoming =
+				#{totalLimitIncoming,jdbcType=BIGINT},
+			</if>
+			<if test="totalLimitOutgoing != -1">
+				total_limit_outgoing =
+				#{totalLimitOutgoing,jdbcType=BIGINT},
+			</if>
+			<if test="eachLimitIncoming != -1">
+				each_limit_incoming =
+				#{eachLimitIncoming,jdbcType=BIGINT},
+			</if>
+			<if test="eachLimitOutgoing != -1">
+				each_limit_outgoing =
+				#{eachLimitOutgoing,jdbcType=BIGINT},
+			</if>
+			<if test="startTime != null">
+				start_time = #{startTime,jdbcType=TIME},
+			</if>
+			<if test="endTime != null">
+				end_time = #{endTime,jdbcType=TIME},
+			</if>
+			<if test="portalUrl != null">
+				portal_url = #{portalUrl,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="loginType != -1">
+				login_type = #{loginType,jdbcType=TINYINT},
+			</if>
+			<if test="nodeStatus != -1">
+				node_status = #{nodeStatus,jdbcType=TINYINT},
+			</if>
+			<if test="venderID != -1">
+				vender_id = #{venderID,jdbcType=BIGINT},
+			</if>
+			<if test="businessID != -1">
+				business_id = #{businessID,jdbcType=BIGINT},
+			</if>
+			<if test="limitOnlineUserNum != -1">
+				limit_online_user_num =
+				#{limitOnlineUserNum,jdbcType=INTEGER},
+			</if>
+			<if test="running != -1">
+				running = #{running,jdbcType=TINYINT},
+			</if>
+			<if test="remainSms != -1">
+				remain_sms = #{remainSms,jdbcType=BIGINT},
+			</if>
+			<if test="smsCodeValidTime != -1">
+				sms_code_valid_time = #{smsCodeValidTime,jdbcType=BIGINT},
+			</if>
+			<if test="smsCodeValidTimeType != -1">
+				sms_code_valid_time_type = #{smsCodeValidTimeType,jdbcType=TINYINT},
+			</if>
+			<if test="smsType != -1">
+				sms_type = #{smsType,jdbcType=TINYINT},
+			</if>
+			<if test="smsCodeLength != -1">
+				sms_code_length = #{smsCodeLength,jdbcType=INTEGER},
+			</if>
+			<if test="smsCodeDayNum != -1">
+				sms_code_day_num = #{smsCodeDayNum,jdbcType=INTEGER},
+			</if>
+			<if test="smsCodeObtainInterval != -1">
+				sms_code_obtain_interval = #{smsCodeObtainInterval,jdbcType=BIGINT},
+			</if>
+			<if test="smsContentID != -1">
+				sms_content_id = #{smsContentID,jdbcType=BIGINT},
+			</if>
+		</set>
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="com.kechuang.wifidog.horizon.model.Node">
+		update
+		horizon_node
+		set node_name =
+		#{ndName,jdbcType=VARCHAR},
+		alias_name =
+		#{aliasName,jdbcType=VARCHAR},
+		mCode = #{mCode,jdbcType=VARCHAR},
+		industry = #{industry,jdbcType=TINYINT},
+		turn_off_time =
+		#{turnOffTime,jdbcType=BIGINT},
+		trun_off_free_time =
+		#{turnOffFreeTime,jdbcType=BIGINT},
+		multi_terminal_login =
+		#{multiTerminalLogin,jdbcType=TINYINT},
+		limit_speed =
+		#{limitSpeed,jdbcType=TINYINT},
+		total_limit_incoming =
+		#{totalLimitIncoming,jdbcType=BIGINT},
+		total_limit_outgoing =
+		#{totalLimitOutgoing,jdbcType=BIGINT},
+		each_limit_incoming =
+		#{eachLimitIncoming,jdbcType=BIGINT},
+		each_limit_outgoing =
+		#{eachLimitOutgoing,jdbcType=BIGINT},
+		start_time =
+		#{startTime,jdbcType=TIME},
+		end_time = #{endTime,jdbcType=TIME},
+		portal_url =
+		#{portalUrl,jdbcType=VARCHAR},
+		update_time =
+		#{updateTime,jdbcType=TIMESTAMP},
+		create_time =
+		#{createTime,jdbcType=TIMESTAMP},
+		login_type =
+		#{loginType,jdbcType=TINYINT},
+		node_status =
+		#{nodeStatus,jdbcType=TINYINT},
+		vender_id =
+		#{venderID,jdbcType=BIGINT},
+		business_id =
+		#{businessID,jdbcType=BIGINT},
+		limit_online_user_num =
+		#{limitOnlineUserNum,jdbcType=INTEGER},
+		running =
+		#{running,jdbcType=TINYINT},
+		remain_sms = #{remainSms,jdbcType=BIGINT},
+		sms_code_valid_time = #{smsCodeValidTime,jdbcType=BIGINT},
+		sms_code_valid_time_type = #{smsCodeValidTimeType,jdbcType=TINYINT},
+		sms_type = #{smsType,jdbcType=TINYINT},
+		sms_code_length = #{smsCodeLength,jdbcType=INTEGER},
+		sms_code_day_num = #{smsCodeDayNum,jdbcType=INTEGER},
+		sms_code_obtain_interval = #{smsCodeObtainInterval,jdbcType=BIGINT},
+		sms_content_id = #{smsContentID,jdbcType=BIGINT}
+		where ID =
+		#{id,jdbcType=BIGINT}
+	</update>
+</mapper>

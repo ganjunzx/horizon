@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<menus>
+	<menu id="route" pid="0" text="路由管理" icon="" priority="0">
+		<childmenu id="routeManager" pid="route" icon="" text="路由管理"
+			url="/vender/nodemanager/route.html" priority="0" />
+	</menu>
+</menus>

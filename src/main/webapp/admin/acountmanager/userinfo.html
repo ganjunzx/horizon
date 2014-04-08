@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>基本信息</title>
+<link href="../../jslib/bootstrap-2.3.1/css/bootstrap.min.css" rel="stylesheet" media="screen">
+<link id="easyuiTheme" rel="stylesheet" href="../../jslib/jquery-easyui-1.3.4/themes/bootstrap/easyui.css" type="text/css">
+<link id="easyuiTheme" rel="stylesheet" href="../../jslib/jquery-easyui-1.3.4/themes/icon.css" type="text/css">
+<script type="text/javascript" src="../../jslib/jquery-2.0.0.js" charset="utf-8"></script>
+<script type="text/javascript" src="../../jslib/jquery-easyui-1.3.4/jquery.easyui.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="../../jslib/jquery-easyui-1.3.4/locale/easyui-lang-zh_CN.js" charset="utf-8"></script>
+<script type="text/javascript" src="../../jslib/extEasyUI.js" charset="utf-8"></script>
+
+<script src="../../js/common/common.js"></script>
+<style type="text/css">
+#editUserForm {
+	margin: 0;
+	padding: 10px 10px;
+}
+
+#addUserForm {
+	margin: 0;
+	padding: 10px 10px;
+}
+
+.ftitle {
+	font-size: 14px;
+	font-weight: bold;
+	padding: 5px 0;
+	margin-bottom: 10px;
+	border-bottom: 1px solid #ccc;
+}
+
+.fitem {
+	margin-bottom: 5px;
+}
+
+.fitem label {
+	display: inline-block;
+	width: 60px;
+}
+</style>
+<script type="text/javascript">
+var isUserNameNew = false;
+var isPasswordNew = false;
+var row = null;
+
+$(function() {
+	$.extend($.fn.validatebox.defaults.rules, {   
+	    equals: {   
+	        validator: function(value,param){   
+	            return value == $(param[0]).val();   
+	        },   
+	        message: '两次密码输入不一致！'  
+	    }   
+	}); 
+	detailInfo();
+});
+
+function detailInfo() {
+	/*  var table = $('#acountInfo');
+	table.empty();
+	tr = $('<tr style="border-bottom:solid 1px #eee;"><td style="border-right:solid 1px #eee;">用户名:</td><td>' + row.userName + '</td></tr>');
+	tr.appendTo(table);
+	tr = $('<tr style="border-bottom:solid 1px #eee;"><td style="border-right:solid 1px #eee;">密码:</td><td>登录系统时需要输入的密码</td></tr>');
+	tr.appendTo(table);
+	tr = $('<tr style="border-bottom:solid 1px #eee;"><td style="border-right:solid 1px #eee;">手机:</td><td>' + (row.cellPhoneNum == null ? "" : row.cellPhoneNum) + '</td></tr>');
+	tr.appendTo(table);
+	tr = $('<tr style="border-bottom:solid 1px #eee;"><td style="border-right:solid 1px #eee;">邮箱:</td><td>' + (row.email == null ? "" : row.email) + '</td></tr>');
+	tr.appendTo(table);
+	tr = $('<tr style="border-bottom:solid 1px #eee;"><td style="border-right:solid 1px #eee;">QQ:</td><td>' + (row.qqNum == null ? "" : row.qqNum) + '</td></tr>');
+	tr.appendTo(table);
+	tr = $('<tr style="border-bottom:solid 1px #eee;"><td style="border-right:solid 1px #eee;">注册时间:</td><td>' + (row.registerdTime == null ? "" : row.registerdTime) + '</td></tr>');
+	tr.appendTo(table);
+	tr = $('<tr style="border-bottom:solid 1px #eee;"><td style="border-right:solid 1px #eee;">公司名:</td><td>' + (row.companyName == null ? "" : row.companyName) + '</td></tr>');
+	tr.appendTo(table);
+	tr = $('<tr style="border-bottom:solid 1px #eee;"><td style="border-right:solid 1px #eee;">省份:</td><td>' + (row.province == null ? "" : row.province) + '</td></tr>');
+	tr.appendTo(table);
+	tr = $('<tr style="border-bottom:solid 1px #eee;"><td style="border-right:solid 1px #eee;">城市:</td><td>' + (row.city == null ? "" : row.city) + '</td></tr>');
+	tr.appendTo(table);
+	tr = $('<tr style="border-bottom:solid 1px #eee;"><td style="border-right:solid 1px #eee;">街道:</td><td>' + (row.streeName == null ? "" : row.streeName) + '</td></tr>');
+	tr.appendTo(table);
+	tr = $('<tr style="border-bottom:solid 1px #eee;"><td style="border-right:solid 1px #eee;">简介:</td><td>' + (row.description == null ? "" : row.description) + '</td></tr>');
+	tr.appendTo(table);  */
+	$.ajax({
+		type : "POST",
+		url : getBasePath() + "/user/userInfo",
+		success : function(data) {
+			var result = $.parseJSON(data);
+			if (result.success == false) {
+				$.messager.show({
+					title : 'Error',
+					msg : result.msg
+				});
+			} else {
+				row = result.obj;
+				$('#userName').text(row.userName);
+				$('#cellPhoneNum').text((row.cellPhoneNum == null ? "" : row.cellPhoneNum));
+				$('#email').text((row.email == null ? "" : row.email));
+				$('#qqNum').text((row.qqNum == null ? "" : row.qqNum));
+				$('#registerdTime').text((row.registerdTime == null ? "" : new Date(row.registerdTime).format("yyyy-MM-dd HH:mm:ss")));
+				$('#companyName').text((row.companyName == null ? "" : row.companyName));
+				$('#province').text((row.province == null ? "" : row.province));
+				$('#city').text((row.city == null ? "" : row.city));
+				$('#streeName').text((row.streeName == null ? "" : row.streeName));
+				$('#description').text((row.description == null ? "" : row.description));
+			}
+		}
+	});
+}
+
+function editUser() {
+	if (row) {
+		$('#editUserDlg').dialog('open').dialog('setTitle', '修改');
+		$('#editUserForm')[0].reset();
+		$('#editUserForm').form('load', row);
+	}
+}
+
+function saveEditUser() {
+	$('#editUserForm').form('submit', {
+		url : getBasePath() + "/business/editSelfInfo",
+		onSubmit : function() {
+			return $(this).form('validate');
+		},
+		success : function(data) {
+			var result = $.parseJSON(data);
+			if (result.success == false) {
+				$.messager.show({
+					title : 'Error',
+					msg : result.msg
+				});
+			} else {
+				$('#editUserDlg').dialog('close');
+				alert("修改成功！");
+				detailInfo();
+			}
+		}
+	});
+}
+
+function modifyPassword() {
+	if (row) {
+		$('#modifyPasswordDlg').dialog('open').dialog('setTitle', '密码修改');
+		$('#modifyPasswordForm')[0].reset();
+		$('#modifyPasswordForm').form('load', row);  
+	}
+}
+
+function saveModifyPassword() {
+	$('#modifyPasswordForm').form('submit', {
+		url : getBasePath() + "/business/modifySelfPassword",
+		onSubmit : function() {
+			return $(this).form('validate');
+		},
+		success : function(data) {
+			/* var result = eval('('+result+')'); */
+			var result = $.parseJSON(data);
+			if (result.success == false) {
+				$.messager.show({
+					title : 'Error',
+					msg : result.msg
+				});
+			} else {
+				$('#modifyPasswordDlg').dialog('close');
+				alert("修改成功！");
+			}
+		}
+	});
+}
+
+</script>
+</head>
+<body>
+<div class="container">
+     <h1 class="page-header">基本信息</h1>
+     <div class="table-responsive">
+      <table class="table table-hover">  
+      <tbody>  
+        <tr>  
+          <td width="20%">用户名:</td>  
+          <td id="userName">leo</td> 
+        </tr>
+         <tr>  
+          <td>手机:</td>  
+          <td id="cellPhoneNum">leo</td> 
+        </tr>
+        <tr>  
+          <td>邮箱:</td>  
+          <td id="email">leo</td> 
+        </tr>
+         <tr>  
+          <td>QQ:</td>  
+          <td id="qqNum">leo</td> 
+        </tr>
+        <tr>  
+          <td>注册时间:</td>  
+          <td id="registerdTime">leo</td> 
+        </tr>
+         <tr>  
+          <td>公司名:</td>  
+          <td id="companyName">leo</td> 
+        </tr>
+        <tr>  
+          <td>省份:</td>  
+          <td id="province">leo</td> 
+        </tr>
+         <tr>  
+          <td>城市:</td>  
+          <td id="city">leo</td> 
+        </tr>
+        <tr>  
+          <td>街道:</td>  
+          <td id="streeName">leo</td> 
+        </tr>
+         <tr>  
+          <td>简介:</td>  
+          <td id="description">leo</td> 
+        </tr>
+      </tbody>  
+    </table> 
+    </div>
+ </div>
+ <button type="button" class="btn btn-default" style="text-align:center; margin-left:20%; margin-top:20px;" onClick="editUser()">信息修改</button>
+ <button type="button" class="btn btn-default" style="text-align:center; margin-left:30px; margin-top:20px;" onClick="modifyPassword()">密码修改</button>
+ 
+<!-- <a href="javascript:void(0)" style="text-align:center; margin-left:40%; margin-top:20px;" class="easyui-linkbutton"
+			iconCls="icon-ok" onClick="editUser()">修改基本信息</a>  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a
+			href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-cancel" onClick="returnLogin()">取消</a> -->
+
+
+<div id="editUserDlg" class="easyui-dialog"
+		style="width: 450px; height: 600px; padding: 10px 20px" closed="true"
+		buttons="#editUserDlg-button">
+		<form id="editUserForm" method="POST" novalidate>
+			<div class="ftitle">用户信息</div>
+			<input id="id" type="hidden" name="id" /> 
+			<div class="fitem">
+				<label>用户名:</label> <input id="userName" name="userName" type="text"
+					readOnly>
+			</div>
+			<div class="fitem">
+				<label>手机:</label> <input id="cellPhoneNum"
+					name="cellPhoneNum" data-options="required:true" class="easyui-validatebox"/>
+			</div>
+			<div class="fitem">
+				<label>QQ:</label> <input id="qqNum"
+					name="qqNum" data-options="required:true" class="easyui-validatebox"/>
+			</div>
+			<div class="fitem">
+				<label>Email:</label> <input id="email" name="email" type="text"
+					data-options="required:true" />
+			</div>
+			<div class="fitem">
+				<label>省份:</label> <select id="province" class="easyui-combobox"
+					name="province" data-options="required:true">
+					<option value="广东">广东</option>
+				</select>
+			</div>
+			<div class="fitem">
+				<label>城市:</label> <select id="city" class="easyui-combobox"
+					name="city" data-options="required:true">
+					<option value="深圳">深圳</option>
+				</select>
+			</div>
+			<div class="fitem">
+				<label>街道:</label> <input id="streeName" type="text"
+					name="streeName" data-options="required:true" />
+			</div>
+			<div class="fitem">
+				<label>公司:</label> <input id="companyName" type="text"
+					name="companyName" data-options="required:true" />
+			</div>
+			<div class="fitem">
+				<label>公司简介:</label> <textarea id="description" name="description" rows="5" cols="20"></textarea>
+			</div>
+		</form>
+	</div>
+	
+		<div id="editUserDlg-button">
+		<a href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-ok" onClick="saveEditUser()">修改</a> <a
+			href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-cancel" onClick="javascript:$('#editUserDlg').dialog('close')">取消</a>
+	</div>
+	
+	<div id="modifyPasswordDlg" class="easyui-dialog"
+		style="width: 350px; height: 250px; padding: 10px 20px" closed="true"
+		buttons="#modifyPasswordDlg-button">
+		<form id="modifyPasswordForm" method="POST" novalidate>
+			<div class="ftitle">用户信息</div>
+			<input id="id" type="hidden" name="id" />
+			<div class="fitem">
+				<label>用户名:</label> <input id="userNameEdit" name="userName" type="text"
+					data-options="required:true" readOnly>
+			</div>
+			<div class="fitem">
+				<label>修改密码:</label> <input id="mpassword" type="password"
+					name="mpassword" class="easyui-validatebox" data-options="required:true"/>
+			</div>
+			<div class="fitem">
+				<label>确认密码:</label> <input id="rpassword" type="password"
+					name="rpassword" class="easyui-validatebox"    
+    required="required" validType="equals['#mpassword']"/>
+			</div>
+		</form>
+	</div>
+	<div id="modifyPasswordDlg-button">
+		<a href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-ok" onClick="saveModifyPassword()">保存</a> <a
+			href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-cancel" onClick="javascript:$('#modifyPasswordDlg').dialog('close')">取消</a>
+	</div>
+
+</body>
+</html>

@@ -1,0 +1,331 @@
+<link href="../../jslib/bootstrap-2.3.1/css/bootstrap.min.css"
+	rel="stylesheet" media="screen">
+<link id="easyuiTheme" rel="stylesheet"
+	href="../../jslib/jquery-easyui-1.3.4/themes/bootstrap/easyui.css"
+	type="text/css">
+<link id="easyuiTheme" rel="stylesheet"
+	href="../../jslib/jquery-easyui-1.3.4/themes/icon.css" type="text/css">
+<script type="text/javascript" src="../../jslib/jquery-2.0.0.js"
+	charset="utf-8"></script>
+<script type="text/javascript"
+	src="../../jslib/jquery-easyui-1.3.4/jquery.easyui.min.js"
+	charset="utf-8"></script>
+<script type="text/javascript"
+	src="../../jslib/jquery-easyui-1.3.4/locale/easyui-lang-zh_CN.js"
+	charset="utf-8"></script>
+<script type="text/javascript" src="../../jslib/extEasyUI.js"
+	charset="utf-8"></script>
+<script src="../../js/common/common.js"></script>
+
+<html>
+<head>
+<title>在线连接</title>
+<style type="text/css">
+#fm {
+	margin: 0;
+	padding: 10px 10px;
+}
+
+#fmm {
+	margin: 0;
+	padding: 10px 10px;
+}
+
+.ftitle {
+	font-size: 14px;
+	font-weight: bold;
+	padding: 5px 0;
+	margin-bottom: 10px;
+	border-bottom: 1px solid #ccc;
+}
+
+.fitem {
+	margin-bottom: 5px;
+}
+
+.fitem label {
+	display: inline-block;
+	width: 60px;
+}
+</style>
+<script type="text/javascript">
+	var listLog;
+	$(function() {
+		$('#lastTime').combobox({
+			url : 'time_select.json',
+			valueField : 'id',
+			textField : 'text'
+		});
+		$('#ndName').combobox({
+			url : getBasePath() + "/business/treeNode",
+			valueField : 'id',
+			textField : 'ndName'
+		});
+		
+		$('#ndName').combobox('select', '-2');
+		$('#startTime').datetimebox({
+			required : false,
+			showSeconds : false,
+			editable : false
+		});
+		$('#endTime').datetimebox({
+			required : false,
+			showSeconds : false,
+			editable : false
+		});
+		
+		$('#listLog').datagrid(
+				{
+					url : getBasePath() + "/business/searchLog",
+					fit : true,
+					fitColumns : true,
+					border : false,
+					idField : 'id',
+					nowrap : false,
+					remoteSort : false,
+					singleSelect : false,//是否单选  
+					pagination : true,//分页控件  
+					rownumbers : true,//行号  
+					pageSize : 20,
+					queryParams : {
+						status : '-1'
+					},
+					frozenColumns : [ [ {
+						field : 'ip',
+						title : 'IP地址',
+						width : 100,
+						sortable : false
+					} ] ],
+					columns : [ [
+							{
+								field : 'status',
+								title : '状态',
+								width : 40,
+								sortable : false,
+								formatter : function(value, row, index) {
+									if (value == 0) {
+										return "离线";
+									} else {
+										return "在线";
+									}
+								}
+							},
+							{
+								field : 'mac',
+								title : 'mac地址',
+								width : 100,
+								sortable : false
+							},
+							{
+								field : 'ndName',
+								title : '热点名',
+								width : 100,
+								sortable : false
+							},
+							{
+								field : 'connectStart',
+								title : '开始时间',
+								width : 100,
+								sortable : false,
+								formatter : function(value, row, index) {
+									var d = new Date(value);
+									/* return d.toLocaleDateString() + "   "
+											+ d.toLocaleTimeString(); */
+									return d.format("yyyy-MM-dd HH:mm:ss");
+								}
+							},
+							{
+								field : 'connectEnd',
+								title : '截止时间',
+								width : 100,
+								sortable : false,
+								formatter : function(value, row, index) {
+									var d = new Date(value);
+									return d.format("yyyy-MM-dd HH:mm:ss");
+								}
+							},
+							{
+								field : 'userName',
+								title : '连接用户',
+								width : 100,
+								sortable : true
+							},
+							{
+								field : 'id',
+								title : '详细信息',
+								width : 100,
+								sortable : false,
+								formatter : function(value, row, index) {
+									return "<a href='#' onclick=detailInfo("
+											+ JSON.stringify(row) + ")>详情</a>";
+								}
+							} ] ],
+					toolbar : '#toolbar',
+					onSelect : function() {
+						$(this).datagrid('clearSelections');
+					}
+				});
+		
+		//设置分页控件  
+		var p = $('#listLog').datagrid('getPager');
+		$(p).pagination({
+			pageSize : 20,//每页显示的记录条数，默认为10  
+			pageList : [ 20, 25, 30 ],//可以设置每页记录条数的列表  
+			beforePageText : '第',//页数文本框前显示的汉字  
+			afterPageText : '页    共 {pages} 页',
+			displayMsg : '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+		/*onBeforeRefresh:function(){ 
+		    $(this).pagination('loading'); 
+		    alert('before refresh'); 
+		    $(this).pagination('loaded'); 
+		}*/
+		});
+		
+	});
+
+	function detailInfo(row) {
+		var table = $('#detailConnect');
+		table.empty();
+		var tr = $("<tr><th>属性</th><th>值</th><tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>IP地址:</td><td>" + row.ip + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>状态:</td><td>" + (row.status == 0 ? "离线" : "在线") + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>热点名:</td><td>" + row.ndName + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>mac地址:</td><td>" + row.mac + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>手机号码:</td><td>" + (row.cellPhoneNum == null ? "" : row.cellPhoneNum) + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>连接用户:</td><td>" + (row.userName == null ? "" : row.userName) + "</td></tr>");
+		tr.appendTo(table);
+		/* tr = $("<tr><td>身份认证:</td><td>" + row.identity + "</td></tr>");
+		tr.appendTo(table); */
+		tr = $("<tr><td>下载带宽:</td><td>" + row.incoming + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>上传带宽:</td><td>" + row.outgoing + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>总下载带宽:</td><td>" + row.totalIncoming + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>总上传带宽:</td><td>" + row.totalOutgoing + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>开始时间:</td><td>" + new Date(row.connectStart).format("yyyy-MM-dd HH:mm:ss") + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>中止时间:</td><td>" + new Date(row.connectEnd).format("yyyy-MM-dd HH:mm:ss") + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>总共用时:</td><td>" + ((row.connectEnd-row.connectStart)/1000/60) + "分钟</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>连接设备:</td><td>" + (row.device == null ? "" : row.device) + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>外网IP:</td><td>" + (row.webIp == null ? "" : row.webIp) + "</td></tr>");
+		tr.appendTo(table);
+		tr = $("<tr><td>连接类型:</td><td>" + (row.connectTypeName == null ? "" : row.connectTypeName) + "</td></tr>");
+		tr.appendTo(table);
+		$('#dlg').dialog('open').dialog('setTitle', '详细连接信息');
+	}
+
+	function searchLog(value, name) {
+		var parameters = new Object();
+		var lastTime = $('#lastTime').combobox('getValue');
+		if (lastTime != null && lastTime != '' && lastTime != 'other') {
+			parameters.lastTime = lastTime;
+		} else {
+			var startTime = $('#startTime').datetimebox('getValue');
+			var endTime = $('#endTime').datetimebox('getValue');
+
+			if (startTime != null && startTime != '') {
+				parameters.startTime = startTime;
+			}
+
+			if (endTime != null && endTime != '') {
+				parameters.endTime = endTime;
+			}
+		}
+
+		var nodeID = $('#ndName').combobox('getValue');
+
+		if (nodeID != null && nodeID != '') {
+			parameters.nodeID = nodeID;
+		}
+		
+		if (name == '在线日志') {
+			parameters.status = '1';
+		} else if (name == '离线日志') {
+			parameters.status = '0';
+		} else {
+			parameters.status = '-1';
+		}
+		
+
+		if (value != null && value != '') {
+			parameters.userName = value;
+		}
+
+		/* parameters.pageNumber = 1;
+		parameters.pageSize = 10;
+		 $.post(getBasePath() + "/business/searchLog", parameters, function(result) {
+			if (result.success) {
+				$('#listLog').datagrid('loadData', result.obj); // reload the user data
+			} else {
+				$.messager.alert("错误", result.msg, 'error');
+			}
+		}, 'json');  */
+		 $('#listLog').datagrid('load', parameters); 
+	}
+</script>
+</head>
+<body>
+	<div class="easyui-layout"
+		style="width: 600PX; height: 500PX; border-left: 0px; MARGIN-LEFT: -1PX;"
+		data-options="fit : true,border : false">
+		<div data-options="region:'center',border:false"
+			style="border-left: 0px; margin-left: -1px;">
+			<table id="listLog"></table>
+		</div>
+	</div>
+
+	<div id="toolbar" style="display: none;">
+		<div style="float: left">
+			<!-- <a onclick="addJob();" href="javascript:void(0);"
+				class="easyui-linkbutton"
+				data-options="plain:true,iconCls:'icon-add'">添加</a> <a
+				onclick="editJob()" href="javascript:void(0)"
+				class="easyui-linkbutton" plain="true" iconCls="icon-edit"> 修改</a> <a
+				onclick="destroyJob()" href="javascript:void(0)"
+				class="easyui-linkbutton" plain="true" iconCls="icon-remove">删除</a> -->
+			<table style="clear: both; display: block;" width="887" border="0"
+				cellspacing="0" cellpadding="0">
+				<tr>
+					<td width="887"><label>&nbsp;&nbsp;过去 </label> <input
+						id="lastTime" name="lastTime" style="width: 100px; height: 24px;"
+						data-options="editable:false,required:true" /> &nbsp;&nbsp;<label>&nbsp;&nbsp;或&nbsp;从</label>
+						<input id="startTime" type="text" name="startTime"
+						style="width: 150px; height: 26px;"></input> <label>&nbsp;&nbsp;到&nbsp;</label>
+						<input id="endTime" type="text" name="endTime"
+						style="width: 150px; height: 24px;"></input> <label>&nbsp;&nbsp;热点名
+					</label> <input id="ndName" name="ndName"
+						style="width: 250px; height: 24px;"
+						data-options="editable:false,required:true" />
+
+						<div style="margin-top: -25px; margin-left: 830px">
+							<input id="search" class="easyui-searchbox"
+								data-options="prompt:'请输入用户名',menu:'#searchMenu',searcher:searchLog"></input>
+							<div id="searchMenu" style="width: 50px;">
+								<div data-options="name:'-1'">全部日志</div>
+								<div data-options="name:'1'">在线日志</div>
+								<div data-options="name:'0'">离线日志</div>
+							</div>
+						</div></td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	<div id="dlg" class="easyui-dialog"
+		style="width: 450px; height: 600px; padding: 10px 20px" closed="true"
+		buttons="#dlg-button">
+		<div class="ftitle">连接信息</div>
+		<table id="detailConnect" style="width: 300px"></table>
+	</div>
+</body>
+</html>

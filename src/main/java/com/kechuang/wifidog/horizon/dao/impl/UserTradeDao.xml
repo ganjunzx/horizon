@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kechuang.wifidog.horizon.dao.UserTradeDao">
+	<resultMap id="BaseResultMap"
+		type="com.kechuang.wifidog.horizon.model.UserTrade">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="user_id" property="userID" jdbcType="BIGINT" />
+		<result column="total_price" property="totalPrice" jdbcType="DOUBLE" />
+		<result column="status" property="status" jdbcType="TINYINT" />
+		<result column="trade_type" property="tradeType" jdbcType="TINYINT" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="description" property="description" jdbcType="VARCHAR" />
+		<result column="trade_way" property="tradeWay" jdbcType="TINYINT" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, user_id, total_price,
+		status, trade_type, create_time, update_time, description, trade_way
+	</sql>
+	<select id="selectByMap" resultMap="BaseResultMap"
+		parameterType="map">
+		select
+		<include refid="Base_Column_List" />
+		from horizon_user_trade
+		where 1=1
+		<if test="id != -1">
+			and id = #{id, jdbcType=BIGINT}
+		</if>
+	</select>
+	<select id="listAllUserTrade" resultMap="BaseResultMap"
+		parameterType="map">
+		select
+		<include refid="Base_Column_List" />
+		from horizon_user_trade
+		where 1=1
+		<if test="userID != -1">
+			and user_id = #{userID, jdbcType=BIGINT}
+		</if>
+		<if test="tradeType != -1">
+			and trade_type = #{tradeType, jdbcType=TINYINT}
+		</if>
+		<if test="status != -1">
+			and status = #{status, jdbcType=TINYINT}
+		</if>
+		<if test="tradeWay != -1">
+			and trade_way = #{tradeWay, jdbcType=TINYINT}
+		</if>
+		<if test="startTime != null">
+			and create_time &gt;= #{startTime, jdbcType=TIMESTAMP}
+		</if>
+		<if test="endTime != null">
+			and create_time &lt;= date_add(#{endTime,
+			jdbcType=TIMESTAMP}, interval 1 day)
+		</if>
+		order by update_time desc
+		<if test="limit != -1">
+			limit #{limit, jdbcType=BIGINT}
+		</if>
+		<if test="offset != -1">
+			offset #{offset,
+			jdbcType=BIGINT}
+		</if>
+	</select>
+
+	<select id="getTotalCount" resultType="java.lang.Long"
+		parameterType="map">
+		select
+		count(*)
+		from horizon_user_trade
+		where 1=1
+		<if test="userID != -1">
+			and user_id = #{userID, jdbcType=BIGINT}
+		</if>
+		<if test="tradeType != -1">
+			and trade_type = #{tradeType, jdbcType=TINYINT}
+		</if>
+		<if test="status != -1">
+			and status = #{status, jdbcType=TINYINT}
+		</if>
+		<if test="tradeWay != -1">
+			and trade_way = #{tradeWay, jdbcType=TINYINT}
+		</if>
+		<if test="startTime != null">
+			and create_time &gt;= #{startTime, jdbcType=TIMESTAMP}
+		</if>
+		<if test="endTime != null">
+			and create_time &lt;= date_add(#{endTime,
+			jdbcType=TIMESTAMP}, interval 1 day)
+		</if>
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+		delete from
+		horizon_user_trade
+		where ID = #{id,jdbcType=BIGINT}
+	</delete>
+	<insert id="insert" parameterType="com.kechuang.wifidog.horizon.model.UserTrade"  useGeneratedKeys="true" keyProperty="id">
+		insert into
+		horizon_user_trade (id, user_id, total_price,
+		status, trade_type, create_time, update_time, description, trade_way)
+		values
+		(#{id,jdbcType=BIGINT}, 
+		#{userID,jdbcType=BIGINT},
+		#{totalPrice,jdbcType=DOUBLE},
+		#{status,jdbcType=TINYINT},
+		#{tradeType,jdbcType=TINYINT},
+		#{createTime,jdbcType=TIMESTAMP},
+		#{updateTime,jdbcType=TIMESTAMP},
+		#{description,jdbcType=VARCHAR},
+		#{tradeWay,jdbcType=TINYINT})
+	</insert>
+	<insert id="insertSelective" parameterType="com.kechuang.wifidog.horizon.model.UserTrade"  useGeneratedKeys="true" keyProperty="id">
+		insert into horizon_user_trade
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="userID != -1">
+				user_id,
+			</if>
+			<if test="totalPrice != -1">
+				total_price,
+			</if>
+			<if test="status != -1">
+				status,
+			</if>
+			<if test="tradeType != -1">
+				trade_type,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="updateTime != null">
+				update_time,
+			</if>
+			<if test="description != null">
+				description,
+			</if>
+			<if test="tradeWay != -1">
+				trade_way,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="userID != -1">
+				#{userID,jdbcType=BIGINT},
+			</if>
+			<if test="totalPrice != -1">
+				#{totalPrice,jdbcType=DOUBLE},
+			</if>
+			<if test="status != -1">
+				#{status,jdbcType=TINYINT},
+			</if>
+			<if test="tradeType != -1">
+				#{tradeType,jdbcType=TINYINT},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="description != null">
+				#{description,jdbcType=VARCHAR},
+			</if>
+			<if test="tradeWay != -1">
+				#{tradeWay,jdbcType=TINYINT},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="com.kechuang.wifidog.horizon.model.UserTrade">
+		update horizon_user_trade
+		<set>
+			<if test="userID != -1">
+				user_id = #{userID,jdbcType=BIGINT},
+			</if>
+			<if test="totalPrice != -1">
+				total_price = #{totalPrice,jdbcType=DOUBLE},
+			</if>
+			<if test="status != -1">
+				status = #{status,jdbcType=TINYINT},
+			</if>
+			<if test="tradeType != -1">
+				trade_type = #{tradeType,jdbcType=TINYINT},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="description != null">
+				description = #{description,jdbcType=VARCHAR},
+			</if>
+			<if test="tradeWay != -1">
+				trade_way = #{tradeWay,jdbcType=TINYINT},
+			</if>
+		</set>
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="com.kechuang.wifidog.horizon.model.UserTrade">
+		update
+		horizon_user_trade
+		set 
+		user_id =
+		#{userID,jdbcType=BIGINT},
+		node_id = #{nodeID,jdbcType=BIGINT},
+		apply_sms = #{applySms,jdbcType=BIGINT},
+		total_price = #{totalPrice,jdbcType=DOUBLE},
+		status = #{status,jdbcType=TINYINT},
+		trade_type = #{tradeType,jdbcType=TINYINT},
+		create_time = #{createTime,jdbcType=TIMESTAMP},
+		update_time = #{updateTime,jdbcType=TIMESTAMP},
+		description = #{description,jdbcType=VARCHAR},
+		trade_way = #{tradeWay,jdbcType=TINYINT}
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+</mapper>

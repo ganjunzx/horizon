@@ -1,0 +1,24 @@
+[{   
+    "id":"hour",   
+    "text":"一小时"  
+},{   
+    "id":"4hr",   
+    "text":"四小时"  
+},{   
+    "id":"day",   
+    "text":"一天"
+},{   
+    "id":"week",   
+    "text":"一周",
+    "selected":true
+},{   
+    "id":"month",   
+    "text":"一个月"  
+},{   
+    "id":"year",   
+    "text":"一年"  
+},{   
+    "id":"other",   
+    "text":"其它",
+    "selected":true
+}]

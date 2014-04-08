@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<menus>
+	<menu id="acount" pid="0" text="账户管理" icon="" priority="0">
+			<childmenu id="smsinfo" pid="acount" icon="" text="账户资产"
+			url="/admin/acountmanager/acountinfo.html" priority="0" />
+			<childmenu id="smsrecord" pid="acount" icon="" text="短信充值"
+			url="/admin/acountmanager/smstrade.html" priority="0" />
+	</menu>
+	<menu id="user" pid="0" text="用户管理" icon="" priority="0">
+		<childmenu id="venderuser" pid="user" icon="" text="用户管理"
+			url="/admin/usermanager/user.html" priority="0" />
+	</menu>
+	<menu id="route" pid="0" text="路由管理" icon="" priority="0">
+		<childmenu id="routeManager" pid="route" icon="" text="路由管理"
+			url="/admin/nodemanager/route.html" priority="0" />
+	</menu>
+	<menu id="userlog" pid="0" text="用户日志" icon="" priority="0">
+		<childmenu id="online" pid="userlog" icon="" text="日志查询"
+			url="/admin/userlog/online.html" priority="0" />
+			<childmenu id="smsverifyhistory" pid="userlog" icon="" text="短信验证统计"
+			url="/admin/userlog/smsverifyhistory.html" priority="0" />
+	</menu>
+</menus>

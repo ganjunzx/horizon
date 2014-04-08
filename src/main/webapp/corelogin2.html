@@ -1,0 +1,217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>登录页</title>
+<!-- <link href="../jslib/bootstrap-2.3.1/css/bootstrap.min.css"
+	rel="stylesheet" media="screen"/> -->
+<link id="easyuiTheme" rel="stylesheet"
+	href="jslib/jquery-easyui-1.3.4/themes/bootstrap/easyui.css"
+	type="text/css"/>
+<link id="easyuiTheme" rel="stylesheet"
+	href="jslib/jquery-easyui-1.3.4/themes/icon.css" type="text/css"/>
+<script type="text/javascript" src="jslib/jquery-2.0.0.js"
+	charset="utf-8"></script>
+<script type="text/javascript"
+	src="jslib/jquery-easyui-1.3.4/jquery.easyui.min.js"
+	charset="utf-8"></script>
+<script type="text/javascript"
+	src="jslib/jquery-easyui-1.3.4/locale/easyui-lang-zh_CN.js"
+	charset="utf-8"></script>
+<script type="text/javascript" src="jslib/extEasyUI.js"
+	charset="utf-8"></script>
+<script src="jslib/hms.js"></script>
+<style>
+* {
+	padding: 0px;
+	margin: 0px;
+}
+
+body {
+	font-family: Arial, Helvetica, sans-serif;
+	background: url(images/grass.jpg);
+	font-size: 13px;
+}
+
+img {
+	border: 0;
+}
+
+.lg {
+	width: 468px;
+	height: 468px;
+	margin: 100px auto;
+	background: url(images/login_bg.png) no-repeat;
+}
+
+.lg_top {
+	height: 200px;
+	width: 468px;
+}
+
+.lg_main {
+	width: 400px;
+	height: 180px;
+	margin: 0 25px;
+}
+
+.lg_m_1 {
+	width: 350px;
+	height: 100px;
+	padding: 60px 55px 20px 55px;
+}
+
+.ur {
+	height: 37px;
+	border: 0;
+	color: #666;
+	width: 236px;
+	margin: 4px 28px;
+	background: url(images/user.png) no-repeat;
+	padding-left: 10px;
+	font-size: 16pt;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+.pw {
+	height: 37px;
+	border: 0;
+	color: #666;
+	width: 236px;
+	margin: 4px 28px;
+	background: url(images/password.png) no-repeat;
+	padding-left: 10px;
+	font-size: 16pt;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+.bn {
+	width: 330px;
+	height: 72px;
+	background: url(images/enter.png) no-repeat;
+	border: 0;
+	display: block;
+	font-size: 18px;
+	color: #FFF;
+	font-family: Arial, Helvetica, sans-serif;
+	font-weight: bolder;
+}
+
+.lg_foot {
+	height: 80px;
+	width: 330px;
+	padding: 6px 68px 0 68px;
+}
+</style>
+<script type="text/javascript">
+
+function checkLogin(data) {// 检查是否登录超时
+	if (data.logoutFlag) {
+		closeProgress();
+		alert('提示', "登录超时,点击确定重新登录.", 'error', login);
+		return false;
+	}
+	return true;
+}
+
+function progress(title, msg) {
+	var win = $.messager.progress({
+		title : title || 'Please waiting',
+		msg : msg || 'Loading data...'
+	});
+}
+
+function closeProgress() {
+	$.messager.progress('close');
+}
+
+function login() {
+	try {
+		$('#errorTips').html('');
+		if ($("#userLogin").form('validate')) {
+			progress('Please waiting', 'Loading...');
+			$("#userLogin").form('submit', {
+				url : getBasePath() + '/user/core/celphoneLogin',
+				success : function(data) {
+					closeProgress();
+					var result = $.parseJSON(data);
+					if (result.success == true) {
+						window.location = "../innerIndex.html";
+					} else {
+//						alert('提示', result.msg, 'error');
+						$('#errorTips').html('<font color="red">' + result.msg + '</font>');
+					}
+				},
+				error : function(response, textStatus, errorThrown) {
+					try {
+						closeProgress();
+						var data = $.parseJSON(response.responseText);
+						// 检查登录
+						if (!checkLogin(data)) {
+							return false;
+						} else {
+							$('#errorTips').html('<font color="red">' + (data.msg || "请求出现异常,请联系管理员")+ '</font>');
+						}
+					} catch (e) {
+						$('#errorTips').html('<font color="red">请求出现异常,请联系管理员.</font>');
+					}
+				}
+			});
+		}
+		
+	} catch (e) {
+
+	}
+	return false;
+}
+
+function sendVerifySms() {
+	$('#errorTips').html('');
+	var gateWayID = $('#gateWayID').val();
+	var celPhone = $('#celphone').val();
+	if (gateWayID == null || gateWayID == '') {
+		$('#errorTips').html('<font color="red">' + 系统错误 + '</font>');
+		return;
+	}
+	
+	if (celphone == null || celphone == '') {
+		$('#errorTips').html('<font color="red">' + 手机号不能为空 + '</font>');
+		return;
+	}
+	$.ajax({
+		type : "POST",
+		url : getBasePath() + "/core/sendVerifySms?gateWayID=" + gateWayID + "&celPhone=" + celPhone,
+		success : function(result) {
+			/*  var result = $.parseJSON(data); */ 
+			if (result.success == false) {
+				$('#errorTips').html('<font color="red">' + result.msg + '</font>');
+			} else {
+				alert('验证码已发送!');
+			}
+		}
+	});
+}
+</script>
+</head>
+<body class="b">
+	<div class="lg">
+		<form id="userLogin" method="post">
+			<div class="lg_top"></div>
+			<div class="lg_main">
+				<div class="lg_m_1">
+					<div style="margin-left:-10px">
+					<label>手机号:&nbsp;&nbsp;</label><input id="celphone" name="celphone" value="" class="easyui-validatebox" data-options="required:true,missingMessage:'手机号不能为空.'"/> <button type="button" class="btn btn-default" style="text-align:center; margin-left:240px; margin-top:-25px;" onClick="">获取验证码</button><br/>
+					</div>
+					<div style="margin-left:-10px;margin-top:10px">
+					<label >验证码:&nbsp;&nbsp;</label><input name="verifyCode" value="" class="easyui-validatebox" data-options="required:true,missingMessage:'验证码不能为空.'"/>
+						<span id="errorTips" style="margin-left: 80px;height: 100px"></span>
+					</div>
+				</div>
+			</div>
+			<div class="lg_foot">
+				<input type="submit" value="Login In" class="bn" onclick="return login();"/>
+			</div>
+		</form>
+	</div>
+</body>
+</html>

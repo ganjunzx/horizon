@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>科创路由后台管理系统</title>
+<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+<link href="jslib/bootstrap-2.3.1/css/bootstrap.min.css"
+	rel="stylesheet" media="screen">
+
+<link id="easyuiTheme" rel="stylesheet"
+	href="jslib/jquery-easyui-1.3.4/themes/bootstrap/easyui.css"
+	type="text/css">
+
+<link id="easyuiTheme" rel="stylesheet"
+	href="jslib/jquery-easyui-1.3.4/themes/icon.css" type="text/css">
+<script type="text/javascript" src="jslib/jquery-2.0.0.js"
+	charset="utf-8"></script>
+
+<script type="text/javascript"
+	src="jslib/jquery-easyui-1.3.4/jquery.easyui.min.js" charset="utf-8"></script>
+<script type="text/javascript"
+	src="jslib/jquery-easyui-1.3.4/locale/easyui-lang-zh_CN.js"
+	charset="utf-8"></script>
+<script type="text/javascript" src="jslib/extEasyUI.js" charset="utf-8"></script>
+<script type="text/javascript" src="jslib/hms.js" charset="utf-8"></script>
+
+<script type="text/javascript">
+	var index_tabs;
+	var index_tabsMenu;
+	var index_layout;
+	$(function() {
+		$.ajax({
+			type : "POST",
+			url : getBasePath() + "/user/userInfo",
+			async: false,
+			success : function(data) {
+				 var result = $.parseJSON(data); 
+				if (result.success == true) {
+					$('#userName').text(result.obj.userName);
+					$('#logout').html('<a href="' + getBasePath() + "/user/logout" + '"><font style="color:#fff;">退出</font></a>');
+					
+				}   else {
+					window.location = "login.html";
+				}  
+			},
+			error : function(XMLHttpRequest, textStatus, errorThrown) {
+				alert("error:" + textStatus + errorThrown);
+			}
+		});
+		index_layout = $('#index_layout').layout({
+			fit : true
+		});
+		index_tabs = $('#index_tabs')
+				.tabs(
+						{
+							fit : true,
+							border : false,
+							onContextMenu : function(e, title) {
+								e.preventDefault();
+								index_tabsMenu.menu('show', {
+									left : e.pageX,
+									top : e.pageY
+								}).data('tabTitle', title);
+							},
+							tools : [
+									{
+										iconCls : 'icon-reload',
+										handler : function() {
+											var href = index_tabs.tabs(
+													'getSelected').panel(
+													'options').href;
+											if (href) {/*说明tab是以href方式引入的目标页面*/
+												var index = index_tabs
+														.tabs(
+																'getTabIndex',
+																index_tabs
+																		.tabs('getSelected'));
+												index_tabs
+														.tabs('getTab', index)
+														.panel('refresh');
+											} else {/*说明tab是以content方式引入的目标页面*/
+												var panel = index_tabs.tabs(
+														'getSelected').panel(
+														'panel');
+												var frame = panel
+														.find('iframe');
+												try {
+													if (frame.length > 0) {
+														for ( var i = 0; i < frame.length; i++) {
+															frame[i].contentWindow.document
+																	.write('');
+															frame[i].contentWindow
+																	.close();
+															frame[i].src = frame[i].src;
+														}
+														if (navigator.userAgent
+																.indexOf("MSIE") > 0) {// IE特有回收内存方法
+															try {
+																CollectGarbage();
+															} catch (e) {
+															}
+														}
+													}
+												} catch (e) {
+												}
+											}
+										}
+									},
+									{
+										iconCls : 'icon-no',
+										handler : function() {
+											var index = index_tabs
+													.tabs(
+															'getTabIndex',
+															index_tabs
+																	.tabs('getSelected'));
+											var tab = index_tabs.tabs('getTab',
+													index);
+											if (tab.panel('options').closable) {
+												index_tabs.tabs('close', index);
+											} else {
+												$.messager
+														.alert(
+																'提示',
+																'['
+																		+ tab
+																				.panel('options').title
+																		+ ']不可以被关闭！',
+																'error');
+											}
+										}
+									} ]
+						});
+
+		index_tabsMenu = $('#index_tabsMenu').menu(
+				{
+					onClick : function(item) {
+						var curTabTitle = $(this).data('tabTitle');
+						var type = $(item.target).attr('title');
+
+						if (type === 'refresh') {
+							index_tabs.tabs('getTab', curTabTitle).panel(
+									'refresh');
+							return;
+						}
+
+						if (type === 'close') {
+							var t = index_tabs.tabs('getTab', curTabTitle);
+							if (t.panel('options').closable) {
+								index_tabs.tabs('close', curTabTitle);
+							}
+							return;
+						}
+
+						var allTabs = index_tabs.tabs('tabs');
+						var closeTabsTitle = [];
+
+						$.each(allTabs, function() {
+							var opt = $(this).panel('options');
+							if (opt.closable && opt.title != curTabTitle
+									&& type === 'closeOther') {
+								closeTabsTitle.push(opt.title);
+							} else if (opt.closable && type === 'closeAll') {
+								closeTabsTitle.push(opt.title);
+							}
+						});
+
+						for ( var i = 0; i < closeTabsTitle.length; i++) {
+							index_tabs.tabs('close', closeTabsTitle[i]);
+						}
+					}
+				});
+
+	});
+
+	function addTab(params) {
+		var iframe = '<iframe src="'
+				+ params.url
+				+ '" frameborder="0" style="border:0;width:100%;height:98%;"></iframe>';
+		var t = $('#index_tabs');
+		var opts = {
+			title : params.title,
+			closable : true,
+			iconCls : params.iconCls,
+			content : iframe,
+			border : false,
+			fit : true
+		};
+		if (t.tabs('exists', opts.title)) {
+			t.tabs('select', opts.title);
+			parent.$.messager.progress('close');
+		} else {
+			t.tabs('add', opts);
+		}
+	}
+</script>
+</head>
+
+<body>
+
+	<div id="nav_bj" style="position: relative; height: 50px; clear: both">
+		<div id="navigation" style="float:left;">
+
+			<ul>
+				<li class="logo1" style="width:auto;padding-top: 10px;"><img
+					src="jslib/jquery-easyui-1.3.4/themes/bootstrap/images3/logo1.png"></li>
+				<!-- <li>
+				<div style="margin-top: 18px; width: 200px;">
+						<span
+							style="font-size: 12px; font-family: Arial, Helvetica, sans-serif; color: #999999;">elargest
+							project team of Editors</span>
+					</div> 
+				</li> -->
+				<!--<li class="home_img"><a href="index.html">HOME</a></li>
+					<li class="ide_img"><a href="../IDEframework/WebContent/index.html">IDE</a></li>
+					<li class="abcd_img"><a href="main.html">ABCD</a></li>-->
+			</ul>
+			<!-- <div id="lgin_if">
+				<img
+					src="jslib/jquery-easyui-1.3.4/themes/bootstrap/images2/name.png"><font>Welcome,
+					 <span id="userName"></span>&nbsp;&nbsp;<span id="logout"></span>
+				</font>
+			</div> -->
+		</div>
+		
+		<div style=" float:right; height:50px; background:url(jslib/jquery-easyui-1.3.4/themes/bootstrap/images3/nav_right_r_bj.jpg) repeat-x;">
+						<div style="  float:right;width:555px; height:70px; background:url(jslib/jquery-easyui-1.3.4/themes/bootstrap/images3/nav_right_bj.jpg) no-repeat;">
+						 
+                          <div id="lgin_if"><img src="jslib/jquery-easyui-1.3.4/themes/bootstrap/images3/name.png"><font style="color:#fff;">Welcome, <span id="userName" style="color:#F90;">
+						  </span>&nbsp;&nbsp;<span id="logout"></span></font></div>
+                        
+  						</div>
+						</div>
+					<!--<li class="home_img"><a href="index.html">HOME</a></li>
+					<li class="ide_img"><a href="../IDEframework/WebContent/index.html">IDE</a></li>
+					<li class="abcd_img"><a href="main.html">ABCD</a></li>-->
+				
+	</div>
+	<div id="index_layout">
+
+		<div data-options="region:'west',href:'./layout/west.html',split:true"
+			title="导航" style="width: 200px; overflow: hidden;"></div>
+		<div data-options="region:'center'" style="overflow: hidden;">
+			<div id="index_tabs" style="overflow: hidden;">
+				<div title="首页" data-options="border:false"
+					style="overflow: hidden; BORDER-LEFT: 0PX;">
+					<iframe src="" frameborder="0"
+						style="border: 0; width: 100%; height: 98%;"></iframe>
+				</div>
+			</div>
+		</div>
+		<div
+			data-options="region:'south',href:'./layout/south.html',border:false"
+			style="height: 30px; overflow: hidden;"></div>
+	</div>
+
+	<div id="index_tabsMenu" style="width: 120px; display: none;">
+		<div title="refresh" data-options="iconCls:'icon-reload'">刷新</div>
+		<div class="menu-sep"></div>
+		<div title="close" data-options="iconCls:'icon-no'">关闭</div>
+		<div title="closeOther" data-options="iconCls:'icon-undo'">关闭其他</div>
+		<div title="closeAll" data-options="iconCls:'icon-cancel'">关闭所有</div>
+	</div>
+</body>
+</html>

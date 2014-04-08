@@ -1,0 +1,273 @@
+<link href="../../jslib/bootstrap-2.3.1/css/bootstrap.min.css"
+	rel="stylesheet" media="screen">
+<link id="easyuiTheme" rel="stylesheet"
+	href="../../jslib/jquery-easyui-1.3.4/themes/bootstrap/easyui.css"
+	type="text/css">
+<link id="easyuiTheme" rel="stylesheet"
+	href="../../jslib/jquery-easyui-1.3.4/themes/icon.css" type="text/css">
+<script type="text/javascript" src="../../jslib/jquery-2.0.0.js"
+	charset="utf-8"></script>
+<script type="text/javascript"
+	src="../../jslib/jquery-easyui-1.3.4/jquery.easyui.min.js" charset="utf-8"></script>
+<script type="text/javascript"
+	src="../../jslib/jquery-easyui-1.3.4/locale/easyui-lang-zh_CN.js"
+	charset="utf-8"></script>
+<script type="text/javascript" src="../../jslib/extEasyUI.js"
+	charset="utf-8"></script>
+
+<script src="../../js/common/common.js"></script>
+
+<html>
+<head>
+<title>新增用户</title>
+<style type="text/css">
+#fm {
+	margin: 0;
+	padding: 10px 10px;
+}
+
+#fmm {
+	margin: 0;
+	padding: 10px 10px;
+}
+
+.ftitle {
+	font-size: 14px;
+	font-weight: bold;
+	padding: 5px 0;
+	margin-bottom: 10px;
+	border-bottom: 1px solid #ccc;
+}
+
+.fitem {
+	margin-bottom: 5px;
+}
+
+.fitem label {
+	display: inline-block;
+	width: 60px;
+}
+</style>
+<script type="text/javascript">
+	var listUser;
+	$(function() {
+		$('#viewuser').hide();
+		$('#adduser').show();
+	});
+
+	function editUser() {
+		var row = $('#listUser').datagrid('getSelected');
+		if (row) {
+			$('#dlg').dialog('open').dialog('setTitle', '修改');
+			$('#fm').form('load', row);
+		}
+
+	}
+
+	function saveEditUser() {
+		$('#fm').form('submit', {
+			url : getBasePath() + "/admin/editUser",
+			onSubmit : function() {
+				return $(this).form('validate');
+			},
+			success : function(data) {
+				var result = $.parseJSON(data);
+				if (result.success == false) {
+					$.messager.show({
+						title : 'Error',
+						msg : result.msg
+					});
+				} else {
+					$('#dlg').dialog('close');
+					$('#listUser').datagrid('reload');
+					$('#listUser').datagrid('clearSelections');
+				}
+			}
+		});
+	}
+
+	function addUser() {
+		saveNewUser();
+		//$('#ddlg').dialog('open').dialog('setTitle', '新增');
+		/* $('#user_id').combobox({
+			url : getBasePath()+"/user/all",
+			editable : false,
+			valueField :'user_id',
+			textField : 'user_id',
+			multiple : false,
+			onSelect:function(data){
+			}		
+		});
+		$('#v_user_id').combobox({
+			url : getBasePath()+"/v_user/get_all_hive_db",
+			editable : false,
+			valueField :'hive_db',
+			textField : 'hive_db',
+			multiple : false,
+			onSelect:function(data){
+			}		
+		}); */
+	}
+
+	function saveNewUser() {
+		$('#adduserfm').form('submit', {
+			url : getBasePath() + "/admin/addUser",
+			onSubmit : function() {
+				return $(this).form('validate');
+			},
+			success : function(data) {
+				/* var result = eval('('+result+')'); */
+				var result = $.parseJSON(data);
+				if (result.success == false) {
+					$.messager.show({
+						title : 'Error',
+						msg : result.msg
+					});
+				} else {
+					var row = result.obj;
+					if (row) {
+						$('#viewuser').show();
+						$('#adduser').hide();
+						$('#viewuserfm').form('load', row);
+					}
+				}
+			}
+		});
+	}
+</script>
+</head>
+<body>
+<div id="viewuser">
+		<form id="viewuserfm" method="POST" novalidate>
+			<div class="ftitle">厂家信息</div>
+			<input id="id" type="hidden" name="id" /> <input id="userType"
+				type="hidden" name="userType" value="VENDERUSER" />
+			<div class="fitem">
+				<label>用户名:</label> <input id="userName" name="userName" type="text"
+					data-options="required:true">
+			</div>
+			<div class="fitem">
+				<label>密码:</label> <input id="password" type="password"
+					name="password" />
+			</div>
+			<div class="fitem">
+				<label>Email:</label> <input id="email" name="email" type="text"
+					data-options="required:true" />
+			</div>
+			<!-- <div class="fitem">
+							<label>国家:</label> 
+							<select	id="country" class="easyui-combobox" name="country" data-options="required:true">
+							<option value="中国">中国</option>
+							</select>
+						</div> -->
+			<div class="fitem">
+				<label>省份:</label> <select id="province" class="easyui-combobox"
+					name="province" data-options="required:true">
+					<option value="广东">广东</option>
+				</select>
+			</div>
+			<div class="fitem">
+				<label>城市:</label> <select id="city" class="easyui-combobox"
+					name="city" data-options="required:true">
+					<option value="深圳">深圳</option>
+				</select>
+			</div>
+			<div class="fitem">
+				<label>街道:</label> <input id="streeName" type="text"
+					name="streeName" data-options="required:true" />
+			</div>
+			<div class="fitem">
+				<label>公司:</label> <input id="companyName" type="text"
+					name="companyName" data-options="required:true" />
+			</div>
+			<div class="fitem">
+				<label>公司简介:</label><textarea id="description" rows="10"  cols="20" name="description" data-options="required:true"></textarea>
+			</div>
+
+			<div class="fitem">
+				<br>
+				<H4 style="border: 0px; background: none; margin-left: -5px;">有效标志：</h4>
+				<input style="width: 20px;" id="userStatus" name="userStatus"
+					type="radio" value="NORMAL" data-options="required:true"
+					checked="true"> 有效 &nbsp;&nbsp;&nbsp;&nbsp; <input
+					style="width: 20px;" id="userStatus" name="userStatus" type="radio"
+					value="LIMIT" data-options="required:true"> 无效<br />
+			</div>
+		</form>
+		<div id="dlg-button">
+		<a href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-ok" onClick="saveEditUser()">保存</a> <a
+			href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-cancel" onClick="javascript:$('#dlg').dialog('close')">取消</a>
+	</div>
+	</div>
+
+<div id="adduser">
+<form id="adduserfm" method="POST" novalidate>
+			<div class="ftitle">厂家信息</div>
+			<input id="userType" type="hidden" name="userType" value="VENDERUSER" />
+			<div class="fitem">
+				<label>用户名:</label> <input id="userName" name="userName" type="text"
+					data-options="required:true">
+			</div>
+			<div class="fitem">
+				<label>密 码:</label> <input id="password" name="password"
+					type="password" data-options="required:true">
+			</div>
+			<div class="fitem">
+				<label>确认密码:</label> <input id="rpassword" type="password"
+					name="rpassword" data-options="required:true" />
+			</div>
+			<div class="fitem">
+				<label>Email:</label> <input id="email" name="email" type="text"
+					data-options="required:true" />
+			</div>
+			<!-- <div class="fitem">
+							<label>国家:</label> 
+							<select	id="country" class="easyui-combobox" name="country" data-options="required:true">
+							<option value="中国">中国</option>
+							</select>
+						</div> -->
+			<div class="fitem">
+				<label>省份:</label> <select id="province" class="easyui-combobox"
+					name="province" data-options="required:true">
+					<option value="广东">广东</option>
+				</select>
+			</div>
+			<div class="fitem">
+				<label>城市:</label> <select id="city" class="easyui-combobox"
+					name="city" data-options="required:true">
+					<option value="深圳">深圳</option>
+				</select>
+			</div>
+			<div class="fitem">
+				<label>街道:</label> <input id="streeName" type="text"
+					name="streeName" data-options="required:true" />
+			</div>
+			<div class="fitem">
+				<label>公司:</label> <input id="companyName" type="text"
+					name="companyName" data-options="required:true" />
+			</div>
+			<div class="fitem">
+				<label>公司简介:</label> <textarea id="description" rows="10"  cols="20" name="description" data-options="required:true"></textarea>
+			</div>
+
+			<div class="fitem">
+				<br>
+				<H4 style="border: 0px; background: none; margin-left: -5px;">有效标志：</h4>
+				<input style="width: 20px;" id="userStatus" name="userStatus"
+					type="radio" value="NORMAL" data-options="required:true"
+					checked="true"> 有效 &nbsp;&nbsp;&nbsp;&nbsp; <input
+					style="width: 20px;" id="userStatus" name="userStatus" type="radio"
+					value="LIMIT" data-options="required:true"> 无效<br />
+			</div>
+		</form>
+	<div id="ddlg-button">
+		<a href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-ok" onClick="saveNewUser()">增加</a> <a
+			href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-cancel" onClick="javascript:$('#ddlg').dialog('close')">取消</a>
+	</div>
+	</div>
+</body>
+</html>

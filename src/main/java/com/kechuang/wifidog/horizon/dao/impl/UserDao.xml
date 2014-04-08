@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kechuang.wifidog.horizon.dao.UserDao">
+	<resultMap id="BaseResultMap" type="com.kechuang.wifidog.horizon.model.User">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="user_name" property="userName" jdbcType="VARCHAR" />
+		<result column="user_password" property="password" jdbcType="VARCHAR" />
+		<result column="user_email" property="email" jdbcType="VARCHAR" />
+		<result column="registered_time" property="registerdTime"
+			jdbcType="TIMESTAMP" />
+		<result column="updated_time" property="updatedTime" jdbcType="TIMESTAMP" />
+		<result column="user_status" property="userStatus" jdbcType="TINYINT" />
+		<result column="user_type" property="userType" jdbcType="TINYINT" />
+		<result column="country" property="country" jdbcType="VARCHAR" />
+		<result column="province" property="province" jdbcType="VARCHAR" />
+		<result column="city" property="city" jdbcType="VARCHAR" />
+		<result column="street_name" property="streeName" jdbcType="VARCHAR" />
+		<result column="company_name" property="companyName" jdbcType="VARCHAR" />
+		<result column="description" property="description" jdbcType="VARCHAR" />
+		<result column="last_login" property="lastLogin" jdbcType="TIMESTAMP" />
+		<result column="vip_level" property="vipLevel" jdbcType="TINYINT" />
+		<result column="cell_phone_num" property="cellPhoneNum"
+			jdbcType="VARCHAR" />
+		<result column="qq_num" property="qqNum" jdbcType="VARCHAR" />
+		<result column="acount" property="acount" jdbcType="DOUBLE" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, user_name, user_password, user_email, registered_time,
+		updated_time,
+		user_status, user_type, country, province, city,
+		street_name,
+		company_name, description, last_login, vip_level,
+		cell_phone_num, qq_num, acount
+	</sql>
+	<select id="selectByMap" resultMap="BaseResultMap"
+		parameterType="map">
+		select
+		<include refid="Base_Column_List" />
+		from horizon_user
+		where 1 = 1
+		<if test="id != -1">
+			and id = #{id,jdbcType=BIGINT}
+		</if>
+		<if test="userName != null">
+			and user_name = #{userName,jdbcType=VARCHAR}
+		</if>
+		<if test="password != null">
+			and user_password = #{password,jdbcType=VARCHAR}
+		</if>
+		limit 1
+	</select>
+
+	<select id="listAllUser" resultMap="BaseResultMap"
+		parameterType="map">
+		select
+		<include refid="Base_Column_List" />
+		from horizon_user
+		order by last_login desc
+		<if test="limit != -1">
+			limit #{limit, jdbcType=BIGINT}
+		</if>
+
+		<if test="offset != -1">
+			offset #{offset, jdbcType=BIGINT}
+		</if>
+	</select>
+	<select id="listAllUserByUserType" resultMap="BaseResultMap"
+		parameterType="map">
+		select
+		<include refid="Base_Column_List" />
+		from horizon_user
+		where 1=1
+		<if test="userType != -1">
+			and user_type = #{userType,jdbcType=TINYINT}
+		</if>
+		order by last_login desc
+		<if test="limit != -1">
+			limit #{limit, jdbcType=BIGINT}
+		</if>
+		<if test="offset != -1">
+			offset #{offset, jdbcType=BIGINT}
+		</if>
+
+	</select>
+
+	<select id="getTotalCount" resultType="java.lang.Long"
+		parameterType="map">
+		select count(*)
+		from horizon_user
+		<if test="userType != -1">
+			where user_type = #{userType,jdbcType=TINYINT}
+		</if>
+	</select>
+	<select id="getTotalAcount" resultType="java.lang.Double"
+		parameterType="map">
+		select sum(acount)
+		from horizon_user
+		<if test="userType != -1">
+			where user_type = #{userType,jdbcType=TINYINT}
+		</if>
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+		delete from
+		horizon_user
+		where ID = #{id,jdbcType=BIGINT}
+	</delete>
+	<insert id="insert" parameterType="com.kechuang.wifidog.horizon.model.User"  useGeneratedKeys="true" keyProperty="id">
+		insert into horizon_user (id,
+		user_name, user_password,
+		user_email, registered_time, updated_time,
+		user_status, user_type, country,
+		province,city,
+		street_name,
+		company_name, description, last_login, vip_level, cell_phone_num,
+		qq_num, acount)
+		values (#{id,jdbcType=BIGINT}, #{userName,jdbcType=VARCHAR},
+		#{password,jdbcType=VARCHAR},
+		#{email,jdbcType=VARCHAR},
+		#{registerdTime,jdbcType=TIMESTAMP},
+		#{updatedTime,jdbcType=TIMESTAMP}, #{userStatus,jdbcType=TINYINT},
+		#{userType,jdbcType=TINYINT},
+		#{country,jdbcType=VARCHAR},
+		#{province,jdbcType=VARCHAR}, #{city,jdbcType=VARCHAR},
+		#{streeName,jdbcType=VARCHAR}, #{companyName,jdbcType=VARCHAR},
+		#{description,jdbcType=VARCHAR}, #{lastLogin,jdbcType=TIMESTAMP},
+		#{vipLevel,jdbcType=TINYINT}, #{cellPhoneNum,jdbcType=VARCHAR},
+		#{qqNum,jdbcType=VARCHAR}, #{acount,jdbcType=DOUBLE})
+	</insert>
+	<insert id="insertSelective" parameterType="com.kechuang.wifidog.horizon.model.User"  useGeneratedKeys="true" keyProperty="id">
+		insert into horizon_user
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="userName != null">
+				user_name,
+			</if>
+			<if test="password != null">
+				user_password,
+			</if>
+			<if test="email != null">
+				user_email,
+			</if>
+			<if test="registerdTime != null">
+				registered_time,
+			</if>
+			<if test="updatedTime != null">
+				updated_time,
+			</if>
+			<if test="userStatus != -1">
+				user_status,
+			</if>
+			<if test="userType != -1">
+				user_type,
+			</if>
+			<if test="country != null">
+				country,
+			</if>
+			<if test="province != null">
+				province,
+			</if>
+			<if test="city != null">
+				city,
+			</if>
+			<if test="streeName != null">
+				street_name,
+			</if>
+			<if test="companyName != null">
+				company_name,
+			</if>
+			<if test="description != null">
+				description,
+			</if>
+			<if test="lastLogin != null">
+				last_login,
+			</if>
+			<if test="vipLevel != -1">
+				vip_level,
+			</if>
+			<if test="cellPhoneNum != null">
+				cell_phone_num,
+			</if>
+			<if test="qqNum != null">
+				qq_num,
+			</if>
+			<if test="acount != -1">
+				acount,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="userName != null">
+				#{userName,jdbcType=VARCHAR},
+			</if>
+			<if test="password != null">
+				#{password,jdbcType=VARCHAR},
+			</if>
+			<if test="email != null">
+				#{email,jdbcType=VARCHAR},
+			</if>
+			<if test="registerdTime != null">
+				#{registerdTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updatedTime != null">
+				#{updatedTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="userStatus != -1">
+				#{userStatus,jdbcType=TINYINT},
+			</if>
+			<if test="userType != -1">
+				#{userType,jdbcType=TINYINT},
+			</if>
+			<if test="country != null">
+				#{country,jdbcType=VARCHAR},
+			</if>
+			<if test="province != null">
+				#{province,jdbcType=VARCHAR},
+			</if>
+			<if test="city != null">
+				#{city,jdbcType=VARCHAR},
+			</if>
+			<if test="streeName != null">
+				#{streeName,jdbcType=VARCHAR},
+			</if>
+			<if test="companyName != null">
+				#{companyName,jdbcType=VARCHAR},
+			</if>
+			<if test="description != null">
+				#{description,jdbcType=VARCHAR},
+			</if>
+			<if test="lastLogin != null">
+				#{lastLogin,jdbcType=TIMESTAMP},
+			</if>
+			<if test="vipLevel != -1">
+				#{vipLevel,jdbcType=TINYINT},
+			</if>
+			<if test="cellPhoneNum != null">
+				#{cellPhoneNum,jdbcType=VARCHAR},
+			</if>
+			<if test="qqNum != null">
+				#{qqNum,jdbcType=VARCHAR},
+			</if>
+			<if test="acount != -1">
+				#{acount,jdbcType=DOUBLE},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="com.kechuang.wifidog.horizon.model.User">
+		update horizon_user
+		<set>
+			<if test="userName != null">
+				user_name = #{userName,jdbcType=VARCHAR},
+			</if>
+			<if test="password != null">
+				user_password = #{password,jdbcType=VARCHAR},
+			</if>
+			<if test="email != null">
+				email = #{email,jdbcType=VARCHAR},
+			</if>
+			<if test="registerdTime != null">
+				registered_time = #{registerdTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updatedTime != null">
+				updated_time = #{updatedTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="userStatus != -1">
+				user_status = #{userStatus,jdbcType=TINYINT},
+			</if>
+			<if test="userType != -1">
+				user_type = #{userType,jdbcType=TINYINT},
+			</if>
+			<if test="country != null">
+				country = #{country,jdbcType=VARCHAR},
+			</if>
+			<if test="province != null">
+				province = #{province,jdbcType=VARCHAR},
+			</if>
+			<if test="city != null">
+				city = #{city,jdbcType=VARCHAR},
+			</if>
+			<if test="streeName != null">
+				street_name = #{streeName,jdbcType=VARCHAR},
+			</if>
+			<if test="companyName != null">
+				company_name = #{companyName,jdbcType=VARCHAR},
+			</if>
+			<if test="description != null">
+				description = #{description,jdbcType=VARCHAR},
+			</if>
+			<if test="lastLogin != null">
+				last_login = #{lastLogin,jdbcType=TIMESTAMP},
+			</if>
+			<if test="vipLevel != -1">
+				vip_level = #{vipLevel,jdbcType=TINYINT},
+			</if>
+			<if test="cellPhoneNum != null">
+				cell_phone_num = #{cellPhoneNum,jdbcType=VARCHAR},
+			</if>
+			<if test="qqNum != null">
+				qq_num = #{qqNum,jdbcType=VARCHAR},
+			</if>
+			<if test="acount != -1">
+				acount = #{acount,jdbcType=DOUBLE},
+			</if>
+		</set>
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="com.kechuang.wifidog.horizon.model.User">
+		update
+		horizon_user
+		set user_name = #{userName,jdbcType=VARCHAR},
+		user_password = #{password,jdbcType=VARCHAR},
+		email =
+		#{email,jdbcType=VARCHAR},
+		registered_time =
+		#{registerdTime,jdbcType=TIMESTAMP},
+		updated_time =
+		#{updatedTime,jdbcType=TIMESTAMP},
+		user_status =
+		#{userStatus,jdbcType=TINYINT},
+		user_type =
+		#{userType,jdbcType=TINYINT},
+		country = #{country,jdbcType=VARCHAR},
+		province = #{province,jdbcType=VARCHAR},
+		city =
+		#{city,jdbcType=VARCHAR},
+		city = #{city,jdbcType=VARCHAR},
+		street_name =
+		#{streeName,jdbcType=VARCHAR},
+		company_name =
+		#{companyName,jdbcType=VARCHAR},
+		street_name =
+		#{streeName,jdbcType=VARCHAR},
+		description =
+		#{description,jdbcType=TIMESTAMP},
+		vip_level =
+		#{vipLevel,jdbcType=TINYINT},
+		cell_phone_num =
+		#{cellPhoneNum,jdbcType=VARCHAR},
+		qq_num =
+		#{qqNum,jdbcType=VARCHAR},
+		acount = #{acount,jdbcType=DOUBLE}
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+</mapper>

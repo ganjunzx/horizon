@@ -1,0 +1,161 @@
+html, body, div, span, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+abbr, address, cite, code,
+del, dfn, em, img, ins, kbd, q, samp,
+small, strong, sub, sup, var,
+b, i,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section, summary,
+time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    font-size: 100%
+}
+
+article,aside,details,figcaption,figure,
+footer,header,hgroup,menu,nav,section { 
+    display: block;
+}
+
+nav ul,
+nav ol {
+    list-style: none;
+    list-style-image: none;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+
+}
+
+dt,dd {display: inline-block;}
+
+a {
+    margin:0;
+    padding:0;
+    font-size:100%;
+	outline: none;
+	text-decoration:none;
+    background:transparent;
+	vertical-align:baseline;
+}
+
+a, a > * {
+	color: #7b7b7b;
+	text-decoration: none;
+}
+
+.not-ie a, .not-ie a > * {
+	-webkit-transition: background-color .2s ease, border .2s ease, color .2s ease, opacity .2s ease-in-out;
+	   -moz-transition: background-color .2s ease, border .2s ease, color .2s ease, opacity .2s ease-in-out;
+		-ms-transition: background-color .2s ease, border .2s ease, color .2s ease, opacity .2s ease-in-out;
+		 -o-transition: background-color .2s ease, border .2s ease, color .2s ease, opacity .2s ease-in-out;
+			transition: background-color .2s ease, border .2s ease, color .2s ease, opacity .2s ease-in-out;
+}
+
+a:hover, a > *:hover {color: #FE5214;}
+
+ul li {
+	list-style: none;
+}
+
+img {
+    border: 0;
+	height: auto;
+	max-width: 100%;
+    -ms-interpolation-mode: bicubic;
+}
+ label{
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+	font-weight:600;
+	color:#666;
+    font-size: 100%;
+}
+
+/* CSS top导航开始 */
+body{margin:0px; padding:0px; background:#dadada;font-family: 'Microsoft Yahei','Arial', 'Helvetica', 'sans-serif';
+	font-weight:500;
+	color:#000; }
+#nav_bj{
+    	height:39px; width:100%; background:url(images2/nav_bj.jpg) repeat-x;border-bottom:solid 1px #999;
+	}
+.logo1{width:91px; padding-left:10px; padding-top:2px;}
+
+#lgin_if{float:right; margin-top:12px; margin-right:20px;}
+#lgin_if font{font-size:12px; font-family:Arial, Helvetica, sans-serif; color:#999;}
+#lgin_if font span{color:#333; font-weight:bold; text-decoration:underline;}
+#navigation {
+		
+		height: 38px; 
+		border-bottom:none;
+	}
+	
+	
+#navigation ul li{
+			position: relative;
+			float:left;
+			margin:0px;
+			list-style: none;
+		}
+
+#navigation ul .home_img a{
+
+				display: block;
+				width:80px;
+				height:38px;
+				text-align: center;
+				font-size: 12px;
+				/*font-family: 'Yanone Kaffeesatz', sans-serif;*/
+				font-family:Arial, Helvetica, sans-serif;
+				background:url(images2/home01.jpg) no-repeat;
+				padding:0px 0px 0px 8px;
+				line-height:42PX;
+				font-weight:bold;
+				
+				
+			}
+#navigation ul .ide_img a{
+
+				display: block;
+				height:38px;
+				width:80px;
+				text-align: center;
+				font-size: 12px;
+				/*font-family: 'Yanone Kaffeesatz', sans-serif;*/
+				font-family:Arial, Helvetica, sans-serif;
+				background:url(images2/ide01.jpg) no-repeat;
+				padding:0px 0px 0px 9px;
+				line-height:42PX;
+				font-weight:bold;
+				
+			}
+#navigation ul .abcd_img a{
+
+				display: block;
+				width:80px;
+				height:38px;
+				text-align: center;
+				font-size: 12px;
+				/*font-family: 'Yanone Kaffeesatz', sans-serif;*/
+				font-family:Arial, Helvetica, sans-serif;
+				background:url(images2/abcd01.jpg) no-repeat;
+				padding:0px 0px 0px 10px;
+				line-height:42PX;
+				font-weight:bold;
+				
+			}
+.navigation > ul > li > a,
+.navigation {border-color: #2b2a2a; color: #fbfafa;}
+			
+#navigation ul .ide_img a:hover {background:url(images2/ide02.jpg) no-repeat 0px 0px; color:#fff;}
+#navigation ul .home_img a:hover {background:url(images2/home02.jpg) no-repeat 0px 0px; color:#FFFFFF;}
+#navigation ul .abcd_img a:hover {background:url(images2/abcd02.jpg) no-repeat 0px 0px; color:#FFFFFF;}

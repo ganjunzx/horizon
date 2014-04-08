@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>商家注册</title>
+<link href="jslib/bootstrap-2.3.1/css/bootstrap.min.css"
+	rel="stylesheet" media="screen">
+<link id="easyuiTheme" rel="stylesheet"
+	href="jslib/jquery-easyui-1.3.4/themes/bootstrap/easyui.css"
+	type="text/css">
+<link id="easyuiTheme" rel="stylesheet"
+	href="jslib/jquery-easyui-1.3.4/themes/icon.css" type="text/css">
+<script type="text/javascript" src="jslib/jquery-2.0.0.js"
+	charset="utf-8"></script>
+<script type="text/javascript"
+	src="jslib/jquery-easyui-1.3.4/jquery.easyui.min.js"
+	charset="utf-8"></script>
+<script type="text/javascript"
+	src="jslib/jquery-easyui-1.3.4/locale/easyui-lang-zh_CN.js"
+	charset="utf-8"></script>
+<script type="text/javascript" src="jslib/extEasyUI.js"
+	charset="utf-8"></script>
+
+<script src="jslib/hms.js"></script>
+<style type="text/css">
+#editUserForm {
+	margin: 0;
+	padding: 10px 10px;
+}
+
+#addUserForm {
+	margin: 0;
+	padding: 10px 10px;
+}
+
+.ftitle {
+	font-size: 14px;
+	font-weight: bold;
+	padding: 5px 0;
+	margin-bottom: 10px;
+	border-bottom: 1px solid #ccc;
+}
+
+.fitem {
+	margin-bottom: 5px;
+}
+
+.fitem label {
+	display: inline-block;
+	width: 60px;
+}
+</style>
+<script type="text/javascript">
+var isUserNameNew = false;
+var isPasswordNew = false;
+
+$(function() {
+	$.extend($.fn.validatebox.defaults.rules, {   
+	    equals: {   
+	        validator: function(value,param){   
+	            return value == $(param[0]).val();   
+	        },   
+	        message: '两次密码输入不一致！'  
+	    }   
+	}); 
+	
+	$(document).ready(function(){
+		$("#userNameNew").blur(function(){
+			var userName = $("#userNameNew").val();
+			if(userName == '' || userName == null){
+				$('#userNameTips').html('<font color="red">请输入用户名！</font>');
+				isUserNameNew = false;
+			}else{
+				$.ajax({
+					type : "POST",
+					url : getBasePath() + "/admin/validUserName",
+					data : "userName="+userName,
+					success : function(result) {
+						/* var result = $.parseJSON(data); */
+						if (result.success == false) {
+							$('#userNameTips').html('<font color="red">' + result.msg + '</font>');
+							isUserNameNew = false;
+						} else {
+							$('#userNameTips').html('');
+							isUserNameNew = true;
+						}
+					}
+				});
+			}
+			});
+	});
+	
+		$(document).ready(function(){
+			$("#passwordNew").blur(function(){
+				var password= $("#passwordNew").val();
+				if(password == '' || password == null){
+					$('#passwordTipsNew').html('<font color="red">请输入密码！</font>');
+					isPasswordNew = false;
+				}else{
+					var rpassword= $("#rpasswordNew").val();
+					if (rpassword == '' || rpassword == null) {
+						$('#passwordTipsNew').html('');
+					} else {
+						if (rpassword != password) {
+							$('#passwordTipsNew').html('<font color="red">两次密码输入不一致！</font>');
+						} else {
+							$('#passwordTipsNew').html('');
+							isPasswordNew = true;
+						}
+					}
+				}
+				});
+		});
+		
+		$(document).ready(function(){
+			$("#rpasswordNew").blur(function(){
+				var rpassword= $("#rpasswordNew").val();
+				if(rpassword == '' || rpassword == null){
+					var password= $("#passwordNew").val();
+					if (password == '' || password == null) {
+						$('#passwordTipsNew').html('<font color="red">请输入密码！</font>');
+					} else {
+						$('#passwordTipsNew').html('<font color="red">两次密码输入不一致！</font>');
+					}
+					isPasswordNew = false;
+				}else{
+					var password= $("#passwordNew").val();
+					if (rpassword != password) {
+						$('#passwordTipsNew').html('<font color="red">两次密码输入不一致！</font>');
+					} else {
+						$('#passwordTipsNew').html('');
+						isPasswordNew = true;
+					}
+				}
+				});
+		});
+});
+
+function registerUser() {
+	if (isUserNameNew == true && isPasswordNew == true) {
+		$('#addUserForm').form('submit', {
+			url : getBasePath() + "/admin/register",
+			onSubmit : function() {
+				return $(this).form('validate');
+			},
+			success : function(data) {
+				/* var result = eval('('+result+')'); */
+				var result = $.parseJSON(data);
+				if (result.success == false) {
+					$.messager.show({
+						title : 'Error',
+						msg : result.msg
+					});
+				} else {
+					window.location = "login.html";
+				}
+			}
+		});
+	}
+}
+
+function returnLogin() {
+	window.location = "login.html";
+}
+
+</script>
+</head>
+<body>
+
+<div><a href="innerIndex.html">[热点后台管理]</a><span> > 商家注册</span></div>
+
+<div style="width: 600px; height: 600px; margin-left: auto;margin-right: auto;">
+		<form id="addUserForm" method="POST" novalidate>
+			<div class="ftitle">商家注册</div>
+			<div class="fitem">
+				<label>用户名:</label> <input id="userNameNew" name="userName" type="text"
+					data-options="required:true"><font color="red">*</font><span id="userNameTips"></span>
+			</div>
+			<div class="fitem">
+				<label>密 码:</label> <input id="passwordNew" name="password"
+					type="password" data-options="required:true">
+					<font color="red">*</font>
+					<span id="passwordTipsNew"></span>
+			</div>
+			<div class="fitem">
+				<label>确认密码:</label> <input id="rpasswordNew" type="password"
+					name="rpassword" data-options="required:true" />
+			</div>
+			<div class="fitem">
+				<label>手机:</label> <input id="cellPhoneNum"
+					name="cellPhoneNum" data-options="required:true" class="easyui-validatebox"/><font color="red">*</font>
+			</div>
+			<div class="fitem">
+				<label>QQ:</label> <input id="qqNum"
+					name="qqNum" data-options="required:true" class="easyui-validatebox"/><font color="red">*</font>
+			</div>
+			<div class="fitem">
+				<label>Email:</label> <input id="email" name="email" class="easyui-validatebox"
+					data-options="required:true,validType:'email'" /><font color="red">*</font>
+			</div>
+			<div class="fitem">
+				<label>省份:</label> <select id="provinceAdd" class="easyui-combobox"
+					name="province">
+					<option value="广东" selected>广东</option>
+				</select>
+			</div>
+			<div class="fitem">
+				<label>城市:</label> <select id="cityAdd" class="easyui-combobox"
+					name="city">
+					<option value="深圳" selected>深圳</option>
+				</select>
+			</div>
+			<div class="fitem">
+				<label>街道:</label> <input id="streeName" type="text" class="easyui-validatebox"
+					name="streeName" data-options="required:true" />
+			</div>
+			<div class="fitem">
+				<label>公司:</label> <input id="companyName" type="text" class="easyui-validatebox"
+					name="companyName" data-options="required:true" /><font color="red">*</font>
+			</div>
+			<div class="fitem">
+				<label>公司简介:</label> 
+				<textarea id="description" name="description" rows="5" cols="20" class="easyui-validatebox" data-options="required:true"></textarea><font color="red">*</font>
+			</div>
+		</form>
+<a href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-ok" onClick="registerUser()">注册</a>  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a
+			href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-cancel" onClick="returnLogin()">取消</a>
+</div>
+
+
+</body>
+</html>
