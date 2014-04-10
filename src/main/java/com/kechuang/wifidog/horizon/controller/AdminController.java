@@ -25,8 +25,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.kechuang.wifidog.horizon.model.CommonUser;
+import com.kechuang.wifidog.horizon.model.Lever;
 import com.kechuang.wifidog.horizon.model.Node;
 import com.kechuang.wifidog.horizon.model.NodeConnection;
+import com.kechuang.wifidog.horizon.model.NodeLever;
 import com.kechuang.wifidog.horizon.model.Result;
 import com.kechuang.wifidog.horizon.model.SmsContent;
 import com.kechuang.wifidog.horizon.model.SmsSecurityCode;
@@ -35,7 +37,9 @@ import com.kechuang.wifidog.horizon.model.User;
 import com.kechuang.wifidog.horizon.model.UserInfo;
 import com.kechuang.wifidog.horizon.model.UserTrade;
 import com.kechuang.wifidog.horizon.service.CommonUserService;
+import com.kechuang.wifidog.horizon.service.LeverService;
 import com.kechuang.wifidog.horizon.service.NodeConnectionService;
+import com.kechuang.wifidog.horizon.service.NodeLeverService;
 import com.kechuang.wifidog.horizon.service.NodeService;
 import com.kechuang.wifidog.horizon.service.SmsContentService;
 import com.kechuang.wifidog.horizon.service.SmsSecurityCodeService;
@@ -80,6 +84,14 @@ public class AdminController {
 	@Autowired
 	@Qualifier("com.kechuang.wifidog.horizon.service.impl.SmsSecurityCodeService")
 	private SmsSecurityCodeService smsSecurityCodeService;
+	
+	@Autowired
+	@Qualifier("com.kechuang.wifidog.horizon.service.impl.LeverService")
+	private LeverService leverService;
+	
+	@Autowired
+	@Qualifier("com.kechuang.wifidog.horizon.service.impl.NodeLeverService")
+	private NodeLeverService nodeLeverService;
 	
 	@ResponseBody
 	@RequestMapping(value = "/treeNode", method = RequestMethod.POST)
@@ -1441,8 +1453,6 @@ public class AdminController {
 		String nodeStatus = request.getParameter("nodeStatus");
 		String venderID = request.getParameter("venderUser");
 		String businessID = request.getParameter("businessUser");
-		String strLimitOnlineUserNum = request
-				.getParameter("limitOnlineUserNum");
 		String strRemainSms = request.getParameter("remainSms");
 		String strSmsCodeValidTime = request.getParameter("smsCodeValidTime");
 		String strSmsType = request.getParameter("smsType");
@@ -1469,7 +1479,6 @@ public class AdminController {
 		byte running = (byte) HorizonConfig.NODE_RUNNING.STOP.getIndex();
 		long longVenderID = -1;
 		long longBusinessID = -1;
-		int limitOnlineUserNum = HorizonConfig.NODE_DEFAULT_LIMITONLINEUSERNUM;
 		long remainSms = HorizonConfig.NODE_DEFAULT_REMAINSMS;
 		long smsCodeValidTime = HorizonConfig.NODE_DEFAULT_SMSCODEVALIDTIME;
 		byte smsType = (byte) HorizonConfig.NODE_SMSTYPE.ONCE.getIndex();
@@ -1549,10 +1558,6 @@ public class AdminController {
 				portalUrl = null;
 			}
 
-			if (strLimitOnlineUserNum != null
-					&& !"".equals(strLimitOnlineUserNum)) {
-				limitOnlineUserNum = Integer.parseInt(strLimitOnlineUserNum);
-			}
 			/*
 			 * if (strRemainSms != null && !"".equals(strRemainSms)) { remainSms
 			 * = Long.parseLong(strRemainSms); }
@@ -1585,8 +1590,7 @@ public class AdminController {
 						longTotalLimitIncoming, longTotalLimitOutgoing,
 						longEachLimitIncoming, longEachLimitOutgoing,
 						timeStartTime, timeEndTime, portalUrl, byteLoginType,
-						byteNodeStatus, longVenderID, longBusinessID,
-						limitOnlineUserNum, running, remainSms,
+						byteNodeStatus, longVenderID, longBusinessID,running, remainSms,
 						smsCodeValidTime, (byte)-1, smsType, smsCodeLength,
 						smsCodeDayNum, smsCodeObtainInterval, -1);
 				nodeService.insert(node);
@@ -1611,7 +1615,9 @@ public class AdminController {
 		}
 		String mcode = request.getParameter("mcode");
 		String venderID = request.getParameter("venderUser");
-
+		String strVipID = request.getParameter("vipID");
+		String strValidTime = request.getParameter("validTime");
+		
 		Result result = new Result();
 		if (mcode != null && !"".equals(mcode) && venderID != null
 				&& !"".equals(venderID)) {
@@ -1637,13 +1643,77 @@ public class AdminController {
 					.ordinal();
 			byte byteNodeStatus = (byte) Node.NODESTATUS.NORMAL.ordinal();
 			byte running = (byte) HorizonConfig.NODE_RUNNING.STOP.getIndex();
-			int limitOnlineUserNum = HorizonConfig.NODE_DEFAULT_LIMITONLINEUSERNUM;
 			long remainSms = HorizonConfig.NODE_DEFAULT_REMAINSMS;
 			long smsCodeValidTime = HorizonConfig.NODE_DEFAULT_SMSCODEVALIDTIME;
 			byte smsType = (byte) HorizonConfig.NODE_SMSTYPE.ONCE.getIndex();
 			int smsCodeLength = HorizonConfig.NODE_DEFAULT_SMSCODELENGTH;
 			int smsCodeDayNum = HorizonConfig.NODE_DEFAULT_SMSCODEDAYNUM;
 			long smsCodeObtainInterval = HorizonConfig.NODE_DEFAULT_SMSCODEOBTAININTERVAL;
+			long vipID = -1;
+			Lever lever = null;
+			
+			if (strVipID != null && !"".equals(strVipID)) {
+				vipID = Long.parseLong(strVipID);
+				lever = leverService.selectByMap(vipID);
+			} else {
+				lever = leverService.selectByMap("vip1");
+				vipID = lever.getId();
+			}
+			
+			int validTime = -1;
+			PropertiesTool propertiesTool = new PropertiesTool();
+			propertiesTool.loadFile("horizon.properties", "UTF-8");
+			if (strValidTime != null && !"".equals(strValidTime)) {
+				if (lever.getVip().equalsIgnoreCase("vip1")) {
+					/*SimpleDateFormat sdf = new SimpleDateFormat(
+							HorizonConfig.DATA_FORMAT);
+					try {
+						endTime = sdf.parse("2030-12-31");
+					} catch (ParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}*/
+					validTime = 1000;
+				} else {
+					validTime = Integer.parseInt(strValidTime);
+					int foreverTime = propertiesTool.getInteger("horizon.node.lever.forever.valid");
+					if (foreverTime <= validTime) {
+						/*SimpleDateFormat sdf = new SimpleDateFormat(
+								HorizonConfig.DATA_FORMAT);
+						try {
+							endTime = sdf.parse("2030-12-31");
+						} catch (ParseException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}*/
+						validTime = 1000;
+					} /*else {
+						SimpleDateFormat sdf = new SimpleDateFormat(
+								HorizonConfig.DATA_FORMAT);
+						Date currentTime = new Date();
+						Calendar calendar=Calendar.getInstance();   
+					    try {
+							calendar.setTime(sdf.parse(currentTime.getYear() + "-" + currentTime.getMonth() + "-" + currentTime.getDay()));
+						} catch (ParseException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					    calendar.add(Calendar.MONTH, validTime);
+					    endTime = calendar.getTime();
+						
+					}*/
+				}
+			} else {
+				/*SimpleDateFormat sdf = new SimpleDateFormat(
+						HorizonConfig.DATA_FORMAT);
+				try {
+					endTime = sdf.parse("2030-12-31");
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}*/
+				validTime = 1000;
+			}
 
 			Node node = new Node("Horizon" + System.currentTimeMillis(), null,
 					mcode, Byte.parseByte("-1"), longTurnOffTime,
@@ -1652,10 +1722,13 @@ public class AdminController {
 					longTotalLimitOutgoing, longEachLimitIncoming,
 					longEachLimitOutgoing, timeStartTime, timeEndTime, null,
 					byteLoginType, byteNodeStatus, Long.parseLong(venderID),
-					-1, limitOnlineUserNum, running, remainSms,
+					-1, running, remainSms,
 					smsCodeValidTime, (byte)-1, smsType, smsCodeLength, smsCodeDayNum,
 					smsCodeObtainInterval, -1);
 			nodeService.insert(node);
+			
+			NodeLever nodeLever = new NodeLever(node.getId(), vipID, null, validTime);
+			nodeLeverService.insert(nodeLever);
 			result.setSuccess(true);
 		} else {
 			result.setSuccess(false);
@@ -1695,8 +1768,6 @@ public class AdminController {
 		String nodeStatus = request.getParameter("nodeStatus");
 		String venderID = request.getParameter("venderUser");
 		String businessID = request.getParameter("businessUser");
-		String strLimitOnlineUserNum = request
-				.getParameter("limitOnlineUserNum");
 		/*
 		 * String strRemainSms = request .getParameter("remainSms");
 		 */
@@ -1789,12 +1860,6 @@ public class AdminController {
 
 				if (businessID != null && !"".equals(businessID)) {
 					node.setBusinessID(Byte.parseByte(businessID));
-				}
-
-				if (strLimitOnlineUserNum != null
-						&& !"".equals(strLimitOnlineUserNum)) {
-					node.setLimitOnlineUserNum(Byte
-							.parseByte(strLimitOnlineUserNum));
 				}
 
 				/*

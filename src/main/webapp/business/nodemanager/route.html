@@ -52,8 +52,6 @@
 <script type="text/javascript">
 	var listNode;
 	var isSubmitFormNew = false;
-	var onlineUserNum = 0;
-
 	$(document)
 			.ready(
 					function() {
@@ -135,27 +133,6 @@
 		$("#isLimitSpeed").hide();
 		$("#isLimitSpeedNew").hide();
 		/* $('#smsInfoEdit').hide(); */
-		$.ajax({
-			type : "POST",
-			url : getBasePath() + "/business/getLimitMaxOnlineNum",
-			success : function(result) {
-				/* var result = $.parseJSON(data); */
-				$('#limitOnlineUserNumAdd').numberbox({
-					required : true,
-					min : 0,
-					max : result,
-					missingMessage : "必须填写0~" + result + "之间的数字"
-				});
-
-				$('#limitOnlineUserNumEdit').numberbox({
-					required : true,
-					min : 0,
-					max : result,
-					missingMessage : "必须填写0~" + result + "之间的数字"
-				});
-				onlineUserNum = result;
-			}
-		});
 
 		  $('#loginTypeEdit').combobox({
 			onSelect : function(rec) {
@@ -214,6 +191,7 @@
 		  
 		  $('#smsCodeObtainIntervalNew').numberbox({
 				required : true,
+				value : 1,
 				min : 1,
 				missingMessage : "有效值必须大于1"
 			});
@@ -323,7 +301,34 @@
 						return value
 					}
 				}
-			} ] ],
+			}, {
+				field : 'nodeLever',
+				title : '操作',
+				width : 100,
+				sortable : false,
+				formatter : function(value, row, index) {
+					var d = new Date(value.endTime);
+					if (value.lever.vip == "vip1") {
+						return "<a href='#' onclick=upgrade1("
+						+ JSON.stringify(value) + ")>升级</a>";
+					} else if(value.lever.vip == "vip4"){
+						if (d.format("yyyy-MM-dd") != "2030-12-31") {
+							return "<a href='#' onclick=renewal("
+							+ JSON.stringify(value) + ")>续期</a>";
+						}
+						
+					} else {
+						if (d.format("yyyy-MM-dd") != "2030-12-31") {
+							return "<a href='#' onclick=upgrade2("
+							+ JSON.stringify(value) + ")>升级</a>&nbsp;&nbsp;<a href='#' onclick=renewal("
+							+ JSON.stringify(value) + ")>续期</a>";
+						} else {
+							return "<a href='#' onclick=upgrade2("
+							+ JSON.stringify(value) + ")>升级</a>";
+						}
+					}
+				}
+			}] ],
 			toolbar : '#toolbar'
 		});
 
@@ -394,14 +399,10 @@
 			$('#editNodeForm').form('load', row);
 			$('#loginTypeEdit').combobox('select', row.loginType);
 			$('#industryEdit').combobox('select', row.industry);
-			$('#limitOnlineUserNumEdit').numberbox('setValue',
-					row.limitOnlineUserNum);
-			
 			$('#smsVerifyTemplateEdit').combobox({
 				 url : getBasePath() + "/business/smsVerifyTemplate",
 				 valueField : 'id',
 				 textField : 'smsContent',
-				 required:true
 			});
 			$('#smsVerifyTemplateEdit').combobox('setValue', row.smsContentID);
 		}
@@ -453,17 +454,15 @@
 		 }); */
 		isSubmitFormNew = false;
 		$('#ndNameTips').html('');
-		$('#limitOnlineUserNumAdd').numberbox('setValue', onlineUserNum);
 		$('#loginTypeAdd').combobox('select', 1);
 		$('#industryAdd').combobox('select', 12);
 		$('#smsVerifyTemplateNew').combobox({
 			 url : getBasePath() + "/business/smsVerifyTemplate",
 			 valueField : 'id',
 			 textField : 'smsContent',
-			 required:true
 		});
-		
-		
+		$('#smsCodeObtainIntervalNew').numberbox("setValue", 1);
+		$('#smsCodeLengthNew').numberbox("setValue", 6);
 		
 		/* $('#user_id').combobox({
 			url : getBasePath()+"/user/all",
@@ -509,6 +508,315 @@
 			});
 		}
 	}
+	
+	function upgrade1(nodeLever) {
+		$('#upgradeDlg1').dialog('open').dialog('setTitle', '热点升级');
+		$('#upgradeForm1')[0].reset();
+		$('#totalPrice').html('');
+		$('#nodeID').val(nodeLever.nodeID);
+		$.ajax({
+			type : "POST",
+			url : getBasePath() + "/business/acountInfo",
+			success : function(data) {
+				var result = $.parseJSON(data);  
+				if (result.success == false) {
+					$.messager.show({
+						title : 'Error',
+						msg : result.msg
+					});
+				} else {
+					$('#remainAcount').html(result.obj + "元");
+				}
+			}
+		});
+		$('#nodeLever').html(nodeLever.lever.vip);
+		var d = new Date(nodeLever.endTime);
+		$('#endTime').html(d.format("yyyy-MM-dd"));
+		$('#upgradeLeverID').combobox({
+			url : getBasePath()+"/business/listLever?nodeID=" + nodeLever.nodeID,
+			valueField : 'id',
+			textField : 'description',
+			onSelect:function(rec){
+				var validTime = $('#validTime').combobox('getValue');
+				var validTimeType = $('#validTimeType').combobox('getValue');
+				if (validTime != null && validTime != "" && validTimeType != null && validTimeType != "") {
+					$.ajax({
+						type : "POST",
+						url : getBasePath() + "/business/upgradeNodePrice",
+						data : {
+							nodeID : nodeLever.nodeID,
+							upgradeLeverID : rec.id,
+							validTimeType : validTimeType,
+							validTime : validTime
+						},
+						success : function(data) {
+							var result = $.parseJSON(data);  
+							if (result.success == false) {
+								$('#totalPrice').html(result.obj);
+							} else {
+								$('#totalPrice').html(result.obj + "元");
+							}
+						}
+					});
+				}
+			}		
+		});
+		$('#validTimeType').combobox({
+			url : 'validtimetype.json',
+			valueField : 'id',
+			textField : 'text',
+			onSelect:function(rec){
+				var validTime = $('#validTime').combobox('getValue');
+				var upgradeLeverID = $('#upgradeLeverID').combobox('getValue');
+				if (validTime != null && validTime != "" && upgradeLeverID != null && upgradeLeverID != "") {
+					$.ajax({
+						type : "POST",
+						url : getBasePath() + "/business/upgradeNodePrice",
+						data : {
+							nodeID : nodeLever.nodeID,
+							upgradeLeverID : upgradeLeverID,
+							validTimeType : rec.id,
+							validTime : validTime
+						},
+						success : function(data) {
+							var result = $.parseJSON(data);  
+							if (result.success == false) {
+								$('#totalPrice').html(result.obj);
+							} else {
+								$('#totalPrice').html(result.obj + "元");
+							}
+						}
+					});
+				}
+			}		
+		});
+		$('#validTime').combobox({
+			url : 'validtime.json',
+			valueField : 'id',
+			textField : 'text',
+			onSelect:function(rec){
+				var validTimeType = $('#validTimeType').combobox('getValue');
+				var upgradeLeverID = $('#upgradeLeverID').combobox('getValue');
+				if (validTimeType != null && validTimeType != "" && upgradeLeverID != null && upgradeLeverID != "") {
+					$.ajax({
+						type : "POST",
+						url : getBasePath() + "/business/upgradeNodePrice",
+						data : {
+							nodeID : nodeLever.nodeID,
+							upgradeLeverID : upgradeLeverID,
+							validTimeType : validTimeType,
+							validTime : rec.id
+						},
+						success : function(data) {
+							var result = $.parseJSON(data);  
+							if (result.success == false) {
+								$('#totalPrice').html(result.obj);
+							} else {
+								$('#totalPrice').html(result.obj);
+							}
+						}
+					});
+				}
+			}		
+		});
+	}
+	
+	function saveUpgrade() {
+			$('#upgradeForm1').form('submit', {
+				url : getBasePath() + "/business/upgradeNodeLever",
+				onSubmit : function() {
+					return $(this).form('validate');
+				},
+				success : function(data) {
+					/* var result = eval('('+result+')'); */
+					var result = $.parseJSON(data);
+					if (result.success == false) {
+						$.messager.show({
+							title : 'Error',
+							msg : result.msg
+						});
+					} else {
+						$('#upgradeDlg1').dialog('close');
+						$('#listNode').datagrid('reload');
+						$('#listNode').datagrid('clearSelections');
+					}
+				}
+			});
+	}
+	
+	function upgrade2(nodeLever) {
+		$('#upgradeDlg2').dialog('open').dialog('setTitle', '热点升级');
+		$('#upgradeForm2')[0].reset();
+		$('#totalPrice2').html('');
+		$('#nodeID2').val(nodeLever.nodeID);
+		$.ajax({
+			type : "POST",
+			url : getBasePath() + "/business/acountInfo",
+			success : function(data) {
+				var result = $.parseJSON(data);  
+				if (result.success == false) {
+					$.messager.show({
+						title : 'Error',
+						msg : result.msg
+					});
+				} else {
+					$('#remainAcount2').html(result.obj + "元");
+				}
+			}
+		});
+		$('#nodeLever2').html(nodeLever.lever.vip);
+		var d = new Date(nodeLever.endTime);
+		$('#endTime2').html(d.format("yyyy-MM-dd"));
+		$('#upgradeLeverID2').combobox({
+			url : getBasePath()+"/business/listLever?nodeID=" + nodeLever.nodeID,
+			valueField : 'id',
+			textField : 'description',
+			onSelect:function(rec){
+				if (validTime != null && validTime != "" && validTimeType != null && validTimeType != "") {
+					$.ajax({
+						type : "POST",
+						url : getBasePath() + "/business/upgradeNodePrice",
+						data : {
+							nodeID : nodeLever.nodeID,
+							upgradeLeverID : rec.id
+						},
+						success : function(data) {
+							var result = $.parseJSON(data);  
+							if (result.success == false) {
+								$('#totalPrice2').html(result.obj);
+							} else {
+								$('#totalPrice2').html(result.obj);
+							}
+						}
+					});
+				}
+			}		
+		});
+	}
+	
+	function saveUpgrade2() {
+		$('#upgradeForm2').form('submit', {
+			url : getBasePath() + "/business/upgradeNodeLever",
+			onSubmit : function() {
+				return $(this).form('validate');
+			},
+			success : function(data) {
+				/* var result = eval('('+result+')'); */
+				var result = $.parseJSON(data);
+				if (result.success == false) {
+					$.messager.show({
+						title : 'Error',
+						msg : result.msg
+					});
+				} else {
+					$('#upgradeDlg2').dialog('close');
+					$('#listNode').datagrid('reload');
+					$('#listNode').datagrid('clearSelections');
+				}
+			}
+		});
+}
+	function renewal(nodeLever) {
+		$('#renewalDlg').dialog('open').dialog('setTitle', '热点续期');
+		$('#renewalForm')[0].reset();
+		$('#renewalTotalPrice').html('');
+		$('#renewalNodeID').val(nodeLever.nodeID);
+		$.ajax({
+			type : "POST",
+			url : getBasePath() + "/business/acountInfo",
+			success : function(data) {
+				var result = $.parseJSON(data);  
+				if (result.success == false) {
+					$.messager.show({
+						title : 'Error',
+						msg : result.msg
+					});
+				} else {
+					$('#renewalRemainAcount').html(result.obj + "元");
+				}
+			}
+		});
+		$('#renewalNodeLever').html(nodeLever.lever.vip);
+		var d = new Date(nodeLever.endTime);
+		$('#renewalEndTime').html(d.format("yyyy-MM-dd"));
+		$('#renewalValidTimeType').combobox({
+			url : 'validtimetype.json',
+			valueField : 'id',
+			textField : 'text',
+			onSelect:function(rec){
+				var validTime = $('#renewalValidTime').combobox('getValue');
+				if (validTime != null && validTime != "") {
+					$.ajax({
+						type : "POST",
+						url : getBasePath() + "/business/renewalNodeLeverPrice",
+						data : {
+							nodeID : nodeLever.nodeID,
+							validTimeType : rec.id,
+							validTime : validTime
+						},
+						success : function(data) {
+							var result = $.parseJSON(data);  
+							if (result.success == false) {
+								$('#renewalTotalPrice').html(result.obj);
+							} else {
+								$('#renewalTotalPrice').html(result.obj);
+							}
+						}
+					});
+				}
+			}		
+		});
+		$('#renewalValidTime').combobox({
+			url : 'validtime.json',
+			valueField : 'id',
+			textField : 'text',
+			onSelect:function(rec){
+				var validTimeType = $('#renewalValidTimeType').combobox('getValue');
+				if (validTimeType != null && validTimeType != "") {
+					$.ajax({
+						type : "POST",
+						url : getBasePath() + "/business/renewalNodeLeverPrice",
+						data : {
+							nodeID : nodeLever.nodeID,
+							validTimeType : validTimeType,
+							validTime : rec.id
+						},
+						success : function(data) {
+							var result = $.parseJSON(data);  
+							if (result.success == false) {
+								$('#renewalTotalPrice').html(result.obj);
+							} else {
+								$('#renewalTotalPrice').html(result.obj);
+							}
+						}
+					});
+				}
+			}		
+		});
+	}
+	
+	function saveRenewal() {
+		$('#renewalForm').form('submit', {
+			url : getBasePath() + "/business/renewalNodeLever",
+			onSubmit : function() {
+				return $(this).form('validate');
+			},
+			success : function(data) {
+				/* var result = eval('('+result+')'); */
+				var result = $.parseJSON(data);
+				if (result.success == false) {
+					$.messager.show({
+						title : 'Error',
+						msg : result.msg
+					});
+				} else {
+					$('#renewalFormDlg').dialog('close');
+					$('#listNode').datagrid('reload');
+					$('#listNode').datagrid('clearSelections');
+				}
+			}
+		});
+}
 </script>
 </head>
 <body>
@@ -666,10 +974,6 @@
 				</select>
 				<input id="smsCodeValidTimeEdit" name="smsCodeValidTime" style="width: 50px;" value="2"/>
 			</div>
-			<div class="fitem">
-				<label>同时在线人数:</label> <input id="limitOnlineUserNumEdit"
-					name="limitOnlineUserNum" />
-			</div>
 		</form>
 	</div>
 	<div id="editNodeDlg-button">
@@ -814,10 +1118,6 @@
 				</select>
 				<input id="smsCodeValidTimeNew" name="smsCodeValidTime" style="width: 50px;" value="2"/>
 			</div>
-			<div class="fitem">
-				<label>同时在线人数:</label> <input id="limitOnlineUserNumAdd"
-					name="limitOnlineUserNum" />
-			</div>
 		</form>
 	</div>
 	<div id="addNodeDlg-button">
@@ -826,6 +1126,109 @@
 			href="javascript:void(0)" class="easyui-linkbutton"
 			iconCls="icon-cancel"
 			onClick="javascript:$('#addNodeDlg').dialog('close')">取消</a>
+	</div>
+	
+		<div id="upgradeDlg1" class="easyui-dialog"
+		style="width: 350px; border: 0PX; BORDER-TOP: 1PX solid #DADADA;; height: 250px; padding: 10px 20px 20PX 10PX;"
+		closed="true" buttons="#upgradeDlg1-button">
+		<form id="upgradeForm1" method="POST" novalidate>
+		<input type="hidden" id="nodeID" name="nodeID"/>
+			<div class="ftitle">热点升级</div>
+			<div class="fitem">
+				<label style="width: 70px;">可用余额:</label> <span><font id="remainAcount"></font></span>
+			</div>
+			<div class="fitem">
+				<label style="width: 70px;">热点等级:</label> <span><font id="nodeLever"></font></span>
+			</div>
+			<div class="fitem">
+				<label style="width: 70px;">截至时间:</label> <span><font id="endTime"></font></span>
+			</div>
+			<div class="fitem" style="margin-top:5px">
+				<label style="width: 70px;">vip套餐:</label> 
+					<input id="upgradeLeverID" name="upgradeLeverID"
+						style="width: 140px; height: 24px;"
+						data-options="editable:false,required:true" />
+			</div>
+			<div class="fitem" style="margin-top:5px">
+				<label style="width: 70px;">时间:</label> 
+					<input id="validTimeType" name="validTimeType" class="easyui-combobox" style="width: 70px; height: 24px;"/>
+					<input id="validTime" name="validTime" class="easyui-combobox" style="width: 70px; height: 24px;"/>
+			</div>
+			<div class="fitem">
+				<label style="width: 70px;">总价:</label> <span><font id="totalPrice"></font></span>
+			</div>
+		</form>
+	</div>
+	<div id="upgradeDlg1-button">
+		<a href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-ok" onClick="saveUpgrade()">升级</a> <a
+			href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-cancel" onClick="javascript:$('#upgradeDlg1').dialog('close')">取消</a>
+	</div>
+	
+			<div id="upgradeDlg2" class="easyui-dialog"
+		style="width: 350px; border: 0PX; BORDER-TOP: 1PX solid #DADADA;; height: 250px; padding: 10px 20px 20PX 10PX;"
+		closed="true" buttons="#upgradeDlg2-button">
+		<form id="upgradeForm2" method="POST" novalidate>
+		<input type="hidden" id="nodeID2" name="nodeID"/>
+			<div class="ftitle">热点升级</div>
+			<div class="fitem">
+				<label style="width: 70px;">可用余额:</label> <span><font id="remainAcount2"></font></span>
+			</div>
+			<div class="fitem">
+				<label style="width: 70px;">热点等级:</label> <span><font id="nodeLever2"></font></span>
+			</div>
+			<div class="fitem">
+				<label style="width: 70px;">截至时间:</label> <span><font id="endTime2"></font></span>
+			</div>
+			<div class="fitem" style="margin-top:5px">
+				<label style="width: 70px;">vip套餐:</label> 
+					<input id="upgradeLeverID2" name="upgradeLeverID"
+						style="width: 140px; height: 24px;"
+						data-options="editable:false,required:true" />
+			</div>
+			<div class="fitem">
+				<label style="width: 70px;">总价:</label> <span><font id="totalPrice2"></font></span>
+			</div>
+		</form>
+	</div>
+	<div id="upgradeDlg2-button">
+		<a href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-ok" onClick="saveUpgrade2()">升级</a> <a
+			href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-cancel" onClick="javascript:$('#upgradeDlg2').dialog('close')">取消</a>
+	</div>
+	
+	<div id="renewalDlg" class="easyui-dialog"
+		style="width: 350px; border: 0PX; BORDER-TOP: 1PX solid #DADADA;; height: 250px; padding: 10px 20px 20PX 10PX;"
+		closed="true" buttons="#renewalDlg-button">
+		<form id="renewalForm" method="POST" novalidate>
+		<input type="hidden" id="renewalNodeID" name="nodeID"/>
+			<div class="ftitle">热点升级</div>
+			<div class="fitem">
+				<label style="width: 70px;">可用余额:</label> <span><font id="renewalRemainAcount"></font></span>
+			</div>
+			<div class="fitem">
+				<label style="width: 70px;">热点等级:</label> <span><font id="renewalNodeLever"></font></span>
+			</div>
+			<div class="fitem">
+				<label style="width: 70px;">截至时间:</label> <span><font id="renewalEndTime"></font></span>
+			</div>
+			<div class="fitem" style="margin-top:5px">
+				<label style="width: 70px;">时间:</label> 
+					<input id="renewalValidTimeType" name="validTimeType" class="easyui-combobox" style="width: 70px; height: 24px;"/>
+					<input id="renewalValidTime" name="validTime" class="easyui-combobox" style="width: 70px; height: 24px;"/>
+			</div>
+			<div class="fitem">
+				<label style="width: 70px;">总价:</label> <span><font id="renewalTotalPrice"></font></span>
+			</div>
+		</form>
+	</div>
+	<div id="renewalDlg-button">
+		<a href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-ok" onClick="saveRenewal()">续期</a> <a
+			href="javascript:void(0)" class="easyui-linkbutton"
+			iconCls="icon-cancel" onClick="javascript:$('#renewalDlg').dialog('close')">取消</a>
 	</div>
 </body>
 </html>

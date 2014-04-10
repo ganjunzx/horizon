@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kechuang.wifidog.horizon.dao.NodeLeverDao">
+	<resultMap id="BaseResultMap"
+		type="com.kechuang.wifidog.horizon.model.NodeLever">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="node_id" property="nodeID" jdbcType="BIGINT" />
+		<result column="vip_id" property="vipID"
+			jdbcType="BIGINT" />
+		<result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+		<result column="valid_time" property="validTime" jdbcType="INTEGER" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id,node_id, vip_id, end_time, valid_time
+	</sql>
+	<select id="selectByMap" resultMap="BaseResultMap"
+		parameterType="map">
+		select
+		<include refid="Base_Column_List" />
+		from horizon_node_lever
+		where 1=1
+		<if test="id != -1">
+			and id = #{id, jdbcType=BIGINT}
+		</if>
+		<if test="nodeID != -1">
+			and node_id = #{nodeID, jdbcType=BIGINT}
+		</if>
+	</select>
+	<select id="listAllNodeLever" resultMap="BaseResultMap"
+		parameterType="map">
+		select
+		<include refid="Base_Column_List" />
+		from horizon_node_lever
+		where 1=1
+		<if test="vipID != -1">
+			and vip_id = #{vipID, jdbcType=BIGINT}
+		</if>
+		order by end_time
+		<if test="limit != -1">
+			limit #{limit, jdbcType=BIGINT}
+		</if>
+		<if test="offset != -1">
+			offset #{offset,
+			jdbcType=BIGINT}
+		</if>
+	</select>
+
+	<select id="getTotalCount" resultType="java.lang.Long"
+		parameterType="map">
+		select
+		count(*)
+		from horizon_node_lever
+		where 1=1
+		<if test="vipID != -1">
+			and vip_id = #{vipID, jdbcType=BIGINT}
+		</if>
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+		delete from
+		horizon_node_lever
+		where ID = #{id,jdbcType=BIGINT}
+	</delete>
+	<insert id="insert" parameterType="com.kechuang.wifidog.horizon.model.NodeLever"  useGeneratedKeys="true" keyProperty="id">
+		insert into
+		horizon_node_lever (id,node_id, vip_id, end_time, valid_time)
+		values
+		(#{id,jdbcType=BIGINT}, 
+		#{nodeID,jdbcType=BIGINT},
+		#{vipID,jdbcType=BIGINT},
+		#{endTime,jdbcType=TIMESTAMP},
+		#{validTime,jdbcType=INTEGER})
+	</insert>
+	<insert id="insertSelective" parameterType="com.kechuang.wifidog.horizon.model.NodeLever"  useGeneratedKeys="true" keyProperty="id">
+		insert into horizon_node_lever
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="nodeID != -1">
+				node_id,
+			</if>
+			<if test="vipID != -1">
+				vip_id,
+			</if>
+			<if test="endTime != null">
+				end_time,
+			</if>
+			<if test="validTime != -1">
+				valid_time,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="nodeID != -1">
+				#{nodeID,jdbcType=BIGINT},
+			</if>
+			<if test="vipID != null">
+				#{vipID,jdbcType=BIGINT},
+			</if>
+			<if test="endTime != null">
+				#{endTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="validTime != null">
+				#{validTime,jdbcType=INTEGER},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="com.kechuang.wifidog.horizon.model.NodeLever">
+		update horizon_node_lever
+		<set>
+			<if test="nodeID != -1">
+				node_id = #{nodeID,jdbcType=BIGINT},
+			</if>
+			<if test="vipID != -1">
+				vip_id = #{vipID,jdbcType=BIGINT},
+			</if>
+			<if test="endTime != null">
+				end_time = #{endTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="validTime != null">
+				valid_time = #{validTime,jdbcType=INTEGER},
+			</if>
+		</set>
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="com.kechuang.wifidog.horizon.model.NodeLever">
+		update
+		horizon_node_lever
+		set 
+		node_id = #{nodeID,jdbcType=BIGINT},
+		vip_id = #{vipID,jdbcType=BIGINT},
+		end_time = #{endTime,jdbcType=TIMESTAMP},
+		valid_time = #{validTime,jdbcType=INTEGER}
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+</mapper>

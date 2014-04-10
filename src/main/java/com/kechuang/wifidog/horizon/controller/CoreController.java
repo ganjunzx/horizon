@@ -24,9 +24,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.kechuang.wifidog.horizon.model.CommonUser;
+import com.kechuang.wifidog.horizon.model.Lever;
 import com.kechuang.wifidog.horizon.model.MobileLocation;
 import com.kechuang.wifidog.horizon.model.Node;
 import com.kechuang.wifidog.horizon.model.NodeConnection;
+import com.kechuang.wifidog.horizon.model.NodeLever;
 import com.kechuang.wifidog.horizon.model.Result;
 import com.kechuang.wifidog.horizon.model.RouteRecord;
 import com.kechuang.wifidog.horizon.model.RouteStatus;
@@ -34,7 +36,9 @@ import com.kechuang.wifidog.horizon.model.SmsSecurityCode;
 import com.kechuang.wifidog.horizon.model.Tokens;
 import com.kechuang.wifidog.horizon.service.CommonUserService;
 import com.kechuang.wifidog.horizon.service.CoreUtilService;
+import com.kechuang.wifidog.horizon.service.LeverService;
 import com.kechuang.wifidog.horizon.service.NodeConnectionService;
+import com.kechuang.wifidog.horizon.service.NodeLeverService;
 import com.kechuang.wifidog.horizon.service.NodeService;
 import com.kechuang.wifidog.horizon.service.RouteRecordService;
 import com.kechuang.wifidog.horizon.service.RouteStatusService;
@@ -88,6 +92,14 @@ public class CoreController {
 	@Autowired
 	@Qualifier("com.kechuang.wifidog.horizon.service.impl.SmsSecurityCodeService")
 	private SmsSecurityCodeService smsSecurityCodeService;
+	
+	@Autowired
+	@Qualifier("com.kechuang.wifidog.horizon.service.impl.NodeLeverService")
+	private NodeLeverService nodeLeverService;
+	
+	@Autowired
+	@Qualifier("com.kechuang.wifidog.horizon.service.impl.LeverService")
+	private LeverService leverService;
 
 	@ResponseBody
 	@RequestMapping(value = "/auth/", method = RequestMethod.GET)
@@ -638,8 +650,9 @@ public class CoreController {
 					if (node.getBusinessID() != -1) {// 判断路由是否激活
 						if (node.getNodeStatus() == Node.NODESTATUS.NORMAL
 								.ordinal()) {// 判断路由的状态
-							if (Integer.parseInt(onlineUser) < node
-									.getLimitOnlineUserNum()) {// 判断路由在线人数是否达到饱和
+							NodeLever nodeLever = nodeLeverService.selectByNodeID(node.getId());
+							Lever lever = leverService.selectByMap(nodeLever.getVipID());
+							if (Integer.parseInt(onlineUser) < lever.getMaxOnlineNum()) {// 判断路由在线人数是否达到饱和
 								session.setAttribute("originURL", url);
 								if (loginType != null) {// 判断是否登录成功
 									String token = TokensUtil.generateTokens();

@@ -48,7 +48,6 @@ public class Node extends BaseModel {
 	private byte nodeStatus;// 0:normal 1:limit
 	private long venderID;
 	private long businessID;
-	private int limitOnlineUserNum;
 	private byte running;
 	private long remainSms;
 	private long smsCodeValidTime;
@@ -85,7 +84,6 @@ public class Node extends BaseModel {
 		this.nodeStatus = -1;
 		this.venderID = -1;
 		this.businessID = -1;
-		this.limitOnlineUserNum = -1;
 		this.running = -1;
 		this.remainSms = -1;
 		this.smsCodeValidTime = -1;
@@ -97,7 +95,7 @@ public class Node extends BaseModel {
 		this.smsCodeValidTimeType = -1;
 	}
 
-	public Node(String ndName, String mcode, long venderID, int limitOnlineUserNum) {
+	public Node(String ndName, String mcode, long venderID) {
 		this.ndName = ndName;
 		this.aliasName = null;
 		this.mCode = mcode;
@@ -119,7 +117,6 @@ public class Node extends BaseModel {
 		this.nodeStatus = -1;
 		this.venderID = venderID;
 		this.businessID = -1;
-		this.limitOnlineUserNum = limitOnlineUserNum;
 		this.running = (byte)HorizonConfig.NODE_RUNNING.STOP.getIndex();
 		this.remainSms = -1;
 		this.smsCodeValidTime = -1;
@@ -135,7 +132,7 @@ public class Node extends BaseModel {
 			byte multiTerminalLogin, byte limitSpeed, long totalLimitIncoming,
 			long totalLimitOutgoing, long eachLimitIncoming, long eachLimitOutgoing,
 			Time startTime, Time endTime, String portalUrl, byte loginType, byte nodeStatus,
-			long venderID, long businessID, int limitOnlineUserNum, byte running, long remainSms, long smsCodeValidTime, byte smsCodeValidTimeType, byte smsType, int smsCodeLength, int smsCodeDayNum, long smsCodeObtainInterval, long smsContentID) {
+			long venderID, long businessID, byte running, long remainSms, long smsCodeValidTime, byte smsCodeValidTimeType, byte smsType, int smsCodeLength, int smsCodeDayNum, long smsCodeObtainInterval, long smsContentID) {
 		this.ndName = ndName;
 		this.aliasName = aliasName;
 		this.mCode = mCode;
@@ -157,7 +154,6 @@ public class Node extends BaseModel {
 		this.nodeStatus = nodeStatus;
 		this.venderID = venderID;
 		this.businessID = businessID;
-		this.limitOnlineUserNum = limitOnlineUserNum;
 		this.running = running;
 		this.remainSms = remainSms;
 		this.smsCodeValidTime = smsCodeValidTime;
@@ -408,15 +404,6 @@ public class Node extends BaseModel {
 	public void setCreateTime(Date createTime) {
 		this.createTime = createTime;
 	}
-
-	public int getLimitOnlineUserNum() {
-		return limitOnlineUserNum;
-	}
-
-	public void setLimitOnlineUserNum(int limitOnlineUserNum) {
-		this.limitOnlineUserNum = limitOnlineUserNum;
-	}
-
 	public byte getRunning() {
 		return running;
 	}

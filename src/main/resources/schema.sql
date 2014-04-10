@@ -1,4 +1,3 @@
-
 drop database horizon;
 create database if not exists horizon;
 use horizon;
@@ -35,7 +34,6 @@ create table if not exists horizon_sms_content (
 );
 alter table horizon_sms_content add constraint tb_horizon_user_fk Foreign Key(user_id) References horizon_user(id);
 
-
 create table if not exists horizon_node(
  id BIGINT comment 'ID' primary key AUTO_INCREMENT,
  node_name varchar(200) comment '节点名',
@@ -59,7 +57,6 @@ create table if not exists horizon_node(
  node_status TINYINT comment '节点状态 0：正常 1：限制',
  vender_id BIGINT comment '路由厂商',
  business_id BIGINT comment '普通商家',
- limit_online_user_num int comment '限制在线用户数',
  running TINYINT comment '节点是否正在运行',
  remain_sms BIGINT comment '剩余短信条数',
  sms_code_valid_time BIGINT comment '短信验证码有效期',
@@ -75,6 +72,24 @@ alter table horizon_node add constraint tb_horizon_user_vender_fk Foreign Key(ve
 alter table horizon_node add constraint tb_horizon_user_business_fk Foreign Key(business_id) References horizon_user(id);
 alter table horizon_node add constraint tb_horizon_sms_content_fk Foreign Key(sms_content_id) References horizon_sms_content(id);
 
+create table if not exists horizon_lever (
+ id BIGINT comment 'ID' primary key AUTO_INCREMENT,
+ vip VARCHAR(10) comment '用户VIP等级 vip1,vip2',
+ max_online_num INT comment '每热点最大在线人数',
+ total_price_one_month DOUBLE comment '升级费用/月'
+);
+
+
+create table if not exists horizon_node_lever (
+ id BIGINT comment 'ID' primary key AUTO_INCREMENT,
+ node_id BIGINT comment 'node ID',
+ vip_id BIGINT comment 'vip ID',
+ end_time DATETIME comment '有效时间',
+ valid_time int comment '有效月数'
+);
+
+alter table horizon_node_lever add constraint tb_horizon_node_fk Foreign Key(node_id) References horizon_node(id);
+alter table horizon_node_lever add constraint tb_horizon_lever_fk Foreign Key(vip_id) References horizon_lever(id);
 
 create table if not exists horizon_common_user(
  id BIGINT comment 'ID' primary key AUTO_INCREMENT,
@@ -198,6 +213,10 @@ alter table horizon_sms_security_code add constraint tb_horizon_node_fk Foreign 
 
 
 insert into horizon_user values(null,'admin', 'admin', 'ganjunzx@gmail.com',now(), now(), 0, 0, '中国', '广东', '深圳', '白石洲乔城豪苑', '科创', '科创', now(), 0, '18676719508', '305534274', 0);
+insert into horizon_lever values(null,'vip1', 10, 0);
+insert into horizon_lever values(null,'vip2', 30, 30);
+insert into horizon_lever values(null,'vip3', 50, 50);
+insert into horizon_lever values(null,'vip4', 100, 100);
 
 --create table if not exists horizon_sms_use_record (
 -- id BIGINT comment 'ID' primary key AUTO_INCREMENT,

@@ -9,8 +9,7 @@
     "text":"一天"
 },{   
     "id":"week",   
-    "text":"一周",
-    "selected":true
+    "text":"一周"
 },{   
     "id":"month",   
     "text":"一个月"  

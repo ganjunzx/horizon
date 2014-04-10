@@ -28,7 +28,6 @@ public class BusinessNode extends BaseModel {
 	private String portalUrl;
 	private Date updateTime;
 	private byte loginType;// 0:直接访问 1：用户密码登录 2：手机验证登录
-	private long limitOnlineUserNum;
 	private long remainSms;
 	
 	private long smsCodeValidTime;
@@ -38,6 +37,7 @@ public class BusinessNode extends BaseModel {
 	private int smsCodeDayNum;
 	private long smsCodeObtainInterval;
 	private long smsContentID;
+	private NodeLever nodeLever;
 
 	public long getSmsCodeValidTime() {
 		return smsCodeValidTime;
@@ -255,20 +255,20 @@ public class BusinessNode extends BaseModel {
 		this.mcode = mcode;
 	}
 
-	public long getLimitOnlineUserNum() {
-		return limitOnlineUserNum;
-	}
-
-	public void setLimitOnlineUserNum(long limitOnlineUserNum) {
-		this.limitOnlineUserNum = limitOnlineUserNum;
-	}
-
 	public long getRemainSms() {
 		return remainSms;
 	}
 
 	public void setRemainSms(long remainSms) {
 		this.remainSms = remainSms;
+	}
+
+	public NodeLever getNodeLever() {
+		return nodeLever;
+	}
+
+	public void setNodeLever(NodeLever nodeLever) {
+		this.nodeLever = nodeLever;
 	}
 
 }

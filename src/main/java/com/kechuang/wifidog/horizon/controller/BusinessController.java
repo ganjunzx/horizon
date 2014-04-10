@@ -28,9 +28,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.kechuang.wifidog.horizon.model.BusinessNode;
+import com.kechuang.wifidog.horizon.model.BusinessNodeLever;
 import com.kechuang.wifidog.horizon.model.CommonUser;
+import com.kechuang.wifidog.horizon.model.Lever;
 import com.kechuang.wifidog.horizon.model.Node;
 import com.kechuang.wifidog.horizon.model.NodeConnection;
+import com.kechuang.wifidog.horizon.model.NodeLever;
 import com.kechuang.wifidog.horizon.model.Result;
 import com.kechuang.wifidog.horizon.model.SmsContent;
 import com.kechuang.wifidog.horizon.model.SmsPackage;
@@ -41,8 +44,10 @@ import com.kechuang.wifidog.horizon.model.User;
 import com.kechuang.wifidog.horizon.model.UserTrade;
 import com.kechuang.wifidog.horizon.model.VenderNode;
 import com.kechuang.wifidog.horizon.service.CommonUserService;
+import com.kechuang.wifidog.horizon.service.LeverService;
 import com.kechuang.wifidog.horizon.service.MenuService;
 import com.kechuang.wifidog.horizon.service.NodeConnectionService;
+import com.kechuang.wifidog.horizon.service.NodeLeverService;
 import com.kechuang.wifidog.horizon.service.NodeService;
 import com.kechuang.wifidog.horizon.service.SmsContentService;
 import com.kechuang.wifidog.horizon.service.SmsSecurityCodeService;
@@ -87,6 +92,14 @@ public class BusinessController {
 	@Autowired
 	@Qualifier("com.kechuang.wifidog.horizon.service.impl.SmsContentService")
 	private SmsContentService smsContentService;
+	
+	@Autowired
+	@Qualifier("com.kechuang.wifidog.horizon.service.impl.NodeLeverService")
+	private NodeLeverService nodeLeverService;
+	
+	@Autowired
+	@Qualifier("com.kechuang.wifidog.horizon.service.impl.LeverService")
+	private LeverService leverService;
 
 	@ResponseBody
 	@RequestMapping(value = "/treeNode", method = RequestMethod.POST)
@@ -244,8 +257,7 @@ public class BusinessController {
 					&& editUser.getQqNum() == null) {
 				result.setSuccess(true);
 			} else {
-				editUser.setUpdatedTime(Calendar.getInstance(
-						TimeZone.getDefault()).getTime());
+				editUser.setUpdatedTime(Calendar.getInstance(TimeZone.getDefault()).getTime());
 				userService.updateByPrimaryKeySelective(editUser);
 				result.setSuccess(true);
 			}
@@ -1238,7 +1250,6 @@ public class BusinessController {
 			businessNode.setTurnOffFreeTime(node.getTurnOffFreeTime());
 			businessNode.setTurnOffTime(node.getTurnOffTime());
 			businessNode.setUpdateTime(node.getUpdateTime());
-			businessNode.setLimitOnlineUserNum(node.getLimitOnlineUserNum());
 			businessNode.setRemainSms(node.getRemainSms());
 			businessNode.setSmsCodeDayNum(node.getSmsCodeDayNum());
 			businessNode.setSmsCodeLength(node.getSmsCodeLength());
@@ -1247,6 +1258,10 @@ public class BusinessController {
 			businessNode.setSmsCodeValidTimeType(node.getSmsCodeValidTimeType());
 			businessNode.setSmsContentID(node.getSmsContentID());
 			businessNode.setSmsType(node.getSmsType());
+			NodeLever nodeLever = nodeLeverService.selectByNodeID(node.getId());
+			Lever lever = leverService.selectByMap(nodeLever.getVipID());
+			nodeLever.setLever(lever);
+			businessNode.setNodeLever(nodeLever);
 			businessNodes.add(businessNode);
 		}
 		return businessNodes;
@@ -1292,7 +1307,6 @@ public class BusinessController {
 
 						byte running = (byte) HorizonConfig.NODE_RUNNING.STOP
 								.getIndex();
-						int limitOnlineUserNum = HorizonConfig.NODE_DEFAULT_LIMITONLINEUSERNUM;
 						long remainSms = HorizonConfig.NODE_DEFAULT_REMAINSMS;
 						long smsCodeValidTime = HorizonConfig.NODE_DEFAULT_SMSCODEVALIDTIME;
 						byte smsCodeValidTimeType = HorizonConfig.NODE_DEFAULT_SMSCODEVALIDTIMETYPE;
@@ -1310,7 +1324,7 @@ public class BusinessController {
 								longEachLimitIncoming, longEachLimitOutgoing,
 								timeStartTime, timeEndTime, null,
 								byteLoginType, byteNodeStatus,
-								node.getVenderID(), -1, limitOnlineUserNum,
+								node.getVenderID(), -1,
 								running, remainSms, smsCodeValidTime,smsCodeValidTimeType, smsType,
 								smsCodeLength, smsCodeDayNum,
 								smsCodeObtainInterval, -1);
@@ -1367,8 +1381,6 @@ public class BusinessController {
 		String portalUrl = request.getParameter("portalUrl");
 		String loginType = request.getParameter("loginType");
 		String nodeStatus = request.getParameter("nodeStatus");
-		String strlimitOnlineUserNum = request
-				.getParameter("limitOnlineUserNum");
 
 		String strSmsVerifyTemplateID = request.getParameter("smsVerifyTemplate");
 		String strSmsCodeLength = request.getParameter("smsCodeLength");
@@ -1379,7 +1391,6 @@ public class BusinessController {
 		String strSmsCodeValidTime = request.getParameter("smsCodeValidTime");
 
 		int num = loginUser.getVipLevel();
-		int limitOnlineUserNum = User.LIMIT_ONLINE_MAX_NUM[num];
 
 		Result result = new Result();
 		if (id != null && !"".equals(id) && ndName != null
@@ -1489,19 +1500,10 @@ public class BusinessController {
 								.parseLong(strSmsCodeObtainInterval));
 					}
 
-					node.setLimitOnlineUserNum(limitOnlineUserNum);
-
 					if (node.getStartTime().compareTo(node.getEndTime()) >= 0) {
 						result.setSuccess(false);
 						result.setMsg("修改路由失败！开放开始时间不能大于开放小于时间！");
 					} else {
-						if (strlimitOnlineUserNum != null
-								&& !"".equals(strlimitOnlineUserNum)) {
-							limitOnlineUserNum = Integer
-									.parseInt(strlimitOnlineUserNum);
-							if (limitOnlineUserNum <= User.LIMIT_ONLINE_MAX_NUM[num]) {
-								node.setLimitOnlineUserNum(limitOnlineUserNum);
-								
 								if (node.getLoginType() == HorizonConfig.NODE_LOGINTYPE.CELLPHONE.getIndex()) {
 									if (strSmsVerifyTemplateID != null && !"".equals(strSmsVerifyTemplateID)) {
 										node.setSmsContentID(Long.parseLong(strSmsVerifyTemplateID));
@@ -1537,17 +1539,6 @@ public class BusinessController {
 										TimeZone.getDefault()).getTime());
 								nodeService.updateByPrimaryKeySelective(node);
 								result.setSuccess(true);
-							} else {
-								result.setSuccess(false);
-								result.setMsg("修改路由失败！同时在线人数设置太大，只能小于等于"
-										+ User.LIMIT_ONLINE_MAX_NUM[num] + "!");
-							}
-						} else {
-							node.setUpdateTime(Calendar.getInstance(
-									TimeZone.getDefault()).getTime());
-							nodeService.updateByPrimaryKeySelective(node);
-							result.setSuccess(true);
-						}
 					}
 				} else {
 					result.setSuccess(false);
@@ -1602,11 +1593,8 @@ public class BusinessController {
 		String strSmsCodeValidType = request.getParameter("smsCodeValidType");
 		String strSmsCodeValidTime = request.getParameter("smsCodeValidTime");
 		
-		String strlimitOnlineUserNum = request
-				.getParameter("limitOnlineUserNum");
 
 		int num = loginUser.getVipLevel();
-		int limitOnlineUserNum = User.LIMIT_ONLINE_MAX_NUM[num];
 
 		Result result = new Result();
 		if (mcode != null && !"".equals(mcode)) {
@@ -1695,19 +1683,11 @@ public class BusinessController {
 								node.setNodeStatus(Byte.parseByte(nodeStatus));
 							}
 
-							node.setLimitOnlineUserNum(limitOnlineUserNum);
 							if (node.getStartTime()
 									.compareTo(node.getEndTime()) >= 0) {
 								result.setSuccess(false);
 								result.setMsg("绑定路由失败！开放开始时间不能大于开放小于时间！");
 							} else {
-								if (strlimitOnlineUserNum != null
-										&& !"".equals(strlimitOnlineUserNum)) {
-									limitOnlineUserNum = Integer
-											.parseInt(strlimitOnlineUserNum);
-									if (limitOnlineUserNum <= User.LIMIT_ONLINE_MAX_NUM[num]) {
-										node.setLimitOnlineUserNum(limitOnlineUserNum);
-										
 										if (node.getLoginType() == HorizonConfig.NODE_LOGINTYPE.CELLPHONE.getIndex()) {
 											if (strSmsVerifyTemplateID != null && !"".equals(strSmsVerifyTemplateID)) {
 												node.setSmsContentID(Long.parseLong(strSmsVerifyTemplateID));
@@ -1745,20 +1725,40 @@ public class BusinessController {
 												.getTime());
 										nodeService
 												.updateByPrimaryKeySelective(node);
+										
+										NodeLever nodeLever = nodeLeverService.selectByNodeID(node.getId());
+										if (nodeLever.getEndTime() == null) {
+											SimpleDateFormat sdf = new SimpleDateFormat(
+													HorizonConfig.DATA_FORMAT);
+											Date leverEndTime = null;
+										    if (nodeLever.getValidTime() == 1000) {
+										    	SimpleDateFormat leverSdf = new SimpleDateFormat(
+														HorizonConfig.DATA_FORMAT);
+												try {
+													leverEndTime = leverSdf.parse("2030-12-31");
+												} catch (ParseException e) {
+													// TODO Auto-generated catch block
+													e.printStackTrace();
+												}
+												nodeLever.setValidTime(0);
+										    } else {
+										    	Date currentTime = new Date();
+										    	Calendar calendar=Calendar.getInstance();   
+											    try {
+													calendar.setTime(currentTime);
+													calendar.setTime(sdf.parse(calendar.get(Calendar.YEAR) + "-" + (calendar.get(Calendar.MONTH) + 1) + "-" + calendar.get(Calendar.DAY_OF_MONTH)));
+												} catch (ParseException e) {
+													// TODO Auto-generated catch block
+													e.printStackTrace();
+												}
+											    calendar.add(Calendar.MONTH, nodeLever.getValidTime());
+											    leverEndTime = calendar.getTime();
+											    nodeLever.setValidTime(0);
+										    }
+											nodeLever.setEndTime(leverEndTime);
+											nodeLeverService.updateByPrimaryKeySelective(nodeLever);
+										}
 										result.setSuccess(true);
-									} else {
-										result.setSuccess(false);
-										result.setMsg("修改路由失败！同时在线人数设置太大，只能小于等于"
-												+ User.LIMIT_ONLINE_MAX_NUM[num]
-												+ "!");
-									}
-								} else {
-									node.setUpdateTime(Calendar.getInstance(
-											TimeZone.getDefault()).getTime());
-									nodeService
-											.updateByPrimaryKeySelective(node);
-									result.setSuccess(true);
-								}
 							}
 						} else {
 							result.setSuccess(false);
@@ -2050,6 +2050,396 @@ public class BusinessController {
 	}
 
 	@ResponseBody
+	@RequestMapping(value = "/listLever", method = RequestMethod.POST)
+	public List<BusinessNodeLever> listLever(HttpServletRequest request,
+			HttpServletResponse response, HttpSession session)
+			throws ServletException, IOException {
+		User loginUser = (User) session.getAttribute("user");
+
+		if (loginUser == null) {
+			response.sendRedirect(request.getContextPath() + "/");
+		}
+
+		String strNodeID = request.getParameter("nodeID");
+		long nodeID = Long.parseLong(strNodeID);
+		
+		NodeLever nodeLever = nodeLeverService.selectByNodeID(nodeID);
+		Lever lever = leverService.selectByMap(nodeLever.getVipID());
+		List<BusinessNodeLever> listBusinessNodeLever = new ArrayList<BusinessNodeLever>();
+		List<Lever> listLever = leverService.listAllLever(-1, -1);
+		for (Lever tempLever : listLever) {
+			if (tempLever.getVip().compareToIgnoreCase(lever.getVip()) > 0) {
+				BusinessNodeLever businessNodeLever = new BusinessNodeLever();
+				businessNodeLever.setId(tempLever.getId());
+				businessNodeLever.setDescription(tempLever.getVip() + ",同时在线" + tempLever.getMaxOnlineNum());
+				listBusinessNodeLever.add(businessNodeLever);
+			}
+		}
+		return listBusinessNodeLever;
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/upgradeNodePrice", method = RequestMethod.POST)
+	public Result upgradeNodePrice(HttpServletRequest request,
+			HttpServletResponse response, HttpSession session)
+			throws ServletException, IOException {
+		User loginUser = (User) session.getAttribute("user");
+
+		if (loginUser == null) {
+			response.sendRedirect(request.getContextPath() + "/");
+		}
+
+		String strNodeID = request.getParameter("nodeID");
+		String strValidTime = request.getParameter("validTime");
+		String strUpgradeLeverID = request.getParameter("upgradeLeverID");
+		String strValidTimeType = request.getParameter("validTimeType");
+		long nodeID = Long.parseLong(strNodeID);
+		long upgradeLeverID = Long.parseLong(strUpgradeLeverID);
+		int validTime = -1;
+		
+		if(strValidTimeType != null) {
+			if ("1".equals(strValidTimeType)) {
+				validTime = Integer.parseInt(strValidTime);
+			} else {
+				validTime = 12 + Integer.parseInt(strValidTime);
+			}
+		}
+		
+		NodeLever nodeLever = nodeLeverService.selectByNodeID(nodeID);
+		Lever lever = leverService.selectByMap(nodeLever.getVipID());
+		Lever upgradeLever = leverService.selectByMap(upgradeLeverID);
+		String totalPrice = "";
+		Result result = new Result();
+		if (lever.getVip().equalsIgnoreCase("vip1")) {
+			if (validTime >= 24) {
+				totalPrice += (upgradeLever.getTotalPriceOneMonth() * 24 + "元 [" + upgradeLever.getTotalPriceOneMonth() + "元 * " + 24 + "月]"); 
+				result.setSuccess(true);
+				result.setObj(totalPrice);
+			} else {
+				totalPrice += (upgradeLever.getTotalPriceOneMonth() * validTime + "元 [" + upgradeLever.getTotalPriceOneMonth() + "元 * " + validTime + "月]");
+				result.setSuccess(true);
+				result.setObj(totalPrice);
+			}
+		} else {
+			Date nodeLeverEndTime = nodeLever.getEndTime();
+			Calendar calendar=Calendar.getInstance(TimeZone.getDefault()); 
+			calendar.setTime(nodeLeverEndTime);
+			System.out.println(calendar.get(Calendar.YEAR) + "-" + (calendar.get(Calendar.MONTH) + 1) + "-" + calendar.get(Calendar.DAY_OF_MONTH));
+			if ((calendar.get(Calendar.YEAR) + "-" + (calendar.get(Calendar.MONTH) + 1) + "-" + calendar.get(Calendar.DAY_OF_MONTH)).equalsIgnoreCase("2030-12-31")) {
+				totalPrice += ((upgradeLever.getTotalPriceOneMonth() - lever.getTotalPriceOneMonth()) * 24 + "元 [(" + upgradeLever.getTotalPriceOneMonth() + " - " + lever.getTotalPriceOneMonth() + ")元 * " + 24 + "月]");
+				result.setSuccess(true);
+				result.setObj(totalPrice);
+			} else {
+				SimpleDateFormat sdf = new SimpleDateFormat(
+						HorizonConfig.DATA_FORMAT);
+				Date currentTime = new Date();
+				Calendar calendarCurrent=Calendar.getInstance(TimeZone.getDefault());   
+				calendarCurrent.setTime(currentTime);
+			    try {
+			    	calendarCurrent.setTime(sdf.parse(calendarCurrent.get(Calendar.YEAR) + "-" + (calendarCurrent.get(Calendar.MONTH) + 1) + "-" + calendarCurrent.get(Calendar.DAY_OF_MONTH)));
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			    if (nodeLeverEndTime.getTime() > currentTime.getTime()) {
+			    	int  monthday = (calendar.get(Calendar.YEAR) - calendarCurrent.get(Calendar.YEAR)) * 12 + ((calendar.get(Calendar.MONTH) + 1) - (calendarCurrent.get(Calendar.MONTH) + 1));
+			    	 if (calendar.get(Calendar.DAY_OF_MONTH) < calendarCurrent.get(Calendar.DAY_OF_MONTH)) {
+			             monthday = monthday + 1;
+			         }
+			    	 
+			    		 totalPrice += ((upgradeLever.getTotalPriceOneMonth() - lever.getTotalPriceOneMonth()) * monthday + "元 [(" + upgradeLever.getTotalPriceOneMonth() + " - " + lever.getTotalPriceOneMonth() + ")元 * " + monthday + "月]");
+			    		 result.setSuccess(true);
+					result.setObj(totalPrice);
+			    } else {
+			    	result.setSuccess(false);
+					result.setObj("系统错误，现在时间大于VIP有效时间");
+			    }
+			}
+		}
+		return result;
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/upgradeNodeLever", method = RequestMethod.POST)
+	public Result upgradeNodeLever(HttpServletRequest request,
+			HttpServletResponse response, HttpSession session)
+			throws ServletException, IOException {
+		User loginUser = (User) session.getAttribute("user");
+
+		if (loginUser == null) {
+			response.sendRedirect(request.getContextPath() + "/");
+		}
+
+		String strNodeID = request.getParameter("nodeID");
+		String strValidTime = request.getParameter("validTime");
+		String strUpgradeLeverID = request.getParameter("upgradeLeverID");
+		String strValidTimeType = request.getParameter("validTimeType");
+		long nodeID = Long.parseLong(strNodeID);
+		long upgradeLeverID = Long.parseLong(strUpgradeLeverID);
+		int validTime = -1;
+		
+		if(strValidTimeType != null) {
+			if ("1".equals(strValidTimeType)) {
+				validTime = Integer.parseInt(strValidTime);
+			} else {
+				validTime = 12 + Integer.parseInt(strValidTime);
+			}
+		}
+		
+		NodeLever nodeLever = nodeLeverService.selectByNodeID(nodeID);
+		Lever lever = leverService.selectByMap(nodeLever.getVipID());
+		Lever upgradeLever = leverService.selectByMap(upgradeLeverID);
+		double totalPrice = 0;
+		Result result = new Result();
+		if (lever.getVip().equalsIgnoreCase("vip1")) {
+			if (validTime >= 24) {
+				try {
+					totalPrice = upgradeLever.getTotalPriceOneMonth() * 24;
+					User businessUser = userService.selectByMap(loginUser.getId());
+					if (businessUser.getAcount() < totalPrice) {
+						result.setSuccess(false);
+						result.setMsg("账户余额不足！");
+					} else {
+						nodeLever.setVipID(upgradeLever.getId());
+						SimpleDateFormat sdf = new SimpleDateFormat(
+								HorizonConfig.DATA_FORMAT);
+						nodeLever.setEndTime(sdf.parse("2030-12-31"));
+						if (nodeLever.getValidTime() != 0) {
+							nodeLever.setValidTime(0);
+						}
+						User businessUserNew = new User();
+						businessUserNew.setId(businessUser.getId());
+						businessUserNew.setAcount(businessUser.getAcount() - totalPrice);
+						userService.updateByPrimaryKeySelective(businessUserNew);
+						nodeLeverService.updateByPrimaryKeySelective(nodeLever);
+						result.setSuccess(true);
+					}
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} else {
+				totalPrice = upgradeLever.getTotalPriceOneMonth() * validTime;
+				User businessUser = userService.selectByMap(loginUser.getId());
+				if (businessUser.getAcount() < totalPrice) {
+					result.setSuccess(false);
+					result.setMsg("账户余额不足！");
+				} else {
+					nodeLever.setVipID(upgradeLever.getId());
+					Calendar calendar=Calendar.getInstance(TimeZone.getDefault());   
+					calendar.setTime(new Date());
+					calendar.add(Calendar.MONTH, validTime);
+					nodeLever.setEndTime(calendar.getTime());
+					if (nodeLever.getValidTime() != 0) {
+						nodeLever.setValidTime(0);
+					}
+					User businessUserNew = new User();
+					businessUserNew.setId(businessUser.getId());
+					businessUserNew.setAcount(businessUser.getAcount() - totalPrice);
+					userService.updateByPrimaryKeySelective(businessUserNew);
+					nodeLeverService.updateByPrimaryKeySelective(nodeLever);
+					result.setSuccess(true);
+				}
+			}
+		} else {
+			Date nodeLeverEndTime = nodeLever.getEndTime();
+			Calendar calendar=Calendar.getInstance(TimeZone.getDefault()); 
+			calendar.setTime(nodeLeverEndTime);
+			if ((calendar.get(Calendar.YEAR) + "-" + (calendar.get(Calendar.MONTH) + 1) + "-" + calendar.get(Calendar.DAY_OF_MONTH)).equalsIgnoreCase("2030-12-31")) {
+				totalPrice = (upgradeLever.getTotalPriceOneMonth() - lever.getTotalPriceOneMonth())* 24;
+				User businessUser = userService.selectByMap(loginUser.getId());
+				if (businessUser.getAcount() < totalPrice) {
+					result.setSuccess(false);
+					result.setMsg("账户余额不足！");
+				} else {
+					nodeLever.setVipID(upgradeLever.getId());
+					/*SimpleDateFormat sdf = new SimpleDateFormat(
+							HorizonConfig.DATA_FORMAT);
+					nodeLever.setEndTime(sdf.parse("2030-12-31"));*/
+					if (nodeLever.getValidTime() != 0) {
+						nodeLever.setValidTime(0);
+					}
+					User businessUserNew = new User();
+					businessUserNew.setId(businessUser.getId());
+					businessUserNew.setAcount(businessUser.getAcount() - totalPrice);
+					userService.updateByPrimaryKeySelective(businessUserNew);
+					nodeLeverService.updateByPrimaryKeySelective(nodeLever);
+					result.setSuccess(true);
+				}
+			} else {
+				SimpleDateFormat sdf = new SimpleDateFormat(
+						HorizonConfig.DATA_FORMAT);
+				Date currentTime = new Date();
+				Calendar calendarCurrent=Calendar.getInstance(TimeZone.getDefault());   
+				calendarCurrent.setTime(currentTime);
+			    try {
+			    	calendarCurrent.setTime(sdf.parse(calendarCurrent.get(Calendar.YEAR) + "-" + (calendarCurrent.get(Calendar.MONTH) + 1) + "-" + calendarCurrent.get(Calendar.DAY_OF_MONTH)));
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			    if (nodeLeverEndTime.getTime() > currentTime.getTime()) {
+			    	int  monthday = (calendar.get(Calendar.YEAR) - calendarCurrent.get(Calendar.YEAR)) * 12 + ((calendar.get(Calendar.MONTH) + 1) - (calendarCurrent.get(Calendar.MONTH) + 1));
+			    	 if (calendar.get(Calendar.DAY_OF_MONTH) < calendarCurrent.get(Calendar.DAY_OF_MONTH)) {
+			             monthday = monthday + 1;
+			         }
+				    	 
+				    		 totalPrice = (upgradeLever.getTotalPriceOneMonth() - lever.getTotalPriceOneMonth()) * monthday;
+				    		 User businessUser = userService.selectByMap(loginUser.getId());
+								if (businessUser.getAcount() < totalPrice) {
+									result.setSuccess(false);
+									result.setMsg("账户余额不足！");
+								} else {
+									nodeLever.setVipID(upgradeLever.getId());
+									//nodeLever.setEndTime(sdf.parse("2030-12-31"));
+									if (nodeLever.getValidTime() != 0) {
+										nodeLever.setValidTime(0);
+									}
+									User businessUserNew = new User();
+									businessUserNew.setId(businessUser.getId());
+									businessUserNew.setAcount(businessUser.getAcount() - totalPrice);
+									userService.updateByPrimaryKeySelective(businessUserNew);
+									nodeLeverService.updateByPrimaryKeySelective(nodeLever);
+									result.setSuccess(true);
+								}
+					} else {
+				    	result.setSuccess(false);
+						result.setObj("系统错误，现在时间大于VIP有效时间");
+				    }
+			}
+			
+			}
+		return result;
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/renewalNodeLeverPrice", method = RequestMethod.POST)
+	public Result renewalNodeLeverPrice(HttpServletRequest request,
+			HttpServletResponse response, HttpSession session)
+			throws ServletException, IOException {
+		User loginUser = (User) session.getAttribute("user");
+
+		if (loginUser == null) {
+			response.sendRedirect(request.getContextPath() + "/");
+		}
+
+		String strNodeID = request.getParameter("nodeID");
+		String strValidTime = request.getParameter("validTime");
+		String strValidTimeType = request.getParameter("validTimeType");
+		long nodeID = Long.parseLong(strNodeID);
+		int validTime = -1;
+		Result result = new Result();
+		
+		if(strValidTimeType != null && !"".equals(strValidTimeType) && strValidTime != null && !"".equals(strValidTime)) {
+			if ("1".equals(strValidTimeType)) {
+				validTime = Integer.parseInt(strValidTime);
+			} else {
+				validTime = 12 + Integer.parseInt(strValidTime);
+			}
+			NodeLever nodeLever = nodeLeverService.selectByNodeID(nodeID);
+			Lever lever = leverService.selectByMap(nodeLever.getVipID());
+			String totalPrice = "";
+			if (validTime >= 24) {
+				totalPrice += (lever.getTotalPriceOneMonth() * 24 + "元 [" + lever.getTotalPriceOneMonth() + "元 * " + 24 + "月]"); 
+				result.setSuccess(true);
+				result.setObj(totalPrice);
+			} else {
+				totalPrice += (lever.getTotalPriceOneMonth() * validTime + "元 [" + lever.getTotalPriceOneMonth() + "元 * " + validTime + "月]");
+				result.setSuccess(true);
+				result.setObj(totalPrice);
+			}
+		} else {
+			result.setSuccess(false);
+			result.setObj("系统错误，时间类型或者时间未选择");
+		}
+		return result;
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/renewalNodeLever", method = RequestMethod.POST)
+	public Result renewalNodeLever(HttpServletRequest request,
+			HttpServletResponse response, HttpSession session)
+			throws ServletException, IOException {
+		User loginUser = (User) session.getAttribute("user");
+
+		if (loginUser == null) {
+			response.sendRedirect(request.getContextPath() + "/");
+		}
+
+		String strNodeID = request.getParameter("nodeID");
+		String strValidTime = request.getParameter("validTime");
+		String strValidTimeType = request.getParameter("validTimeType");
+		long nodeID = Long.parseLong(strNodeID);
+		int validTime = -1;
+		Result result = new Result();
+		
+		if(strValidTimeType != null && !"".equals(strValidTimeType) && strValidTime != null && !"".equals(strValidTime)) {
+			if ("1".equals(strValidTimeType)) {
+				validTime = Integer.parseInt(strValidTime);
+			} else {
+				validTime = 12 + Integer.parseInt(strValidTime);
+			}
+			NodeLever nodeLever = nodeLeverService.selectByNodeID(nodeID);
+			Lever lever = leverService.selectByMap(nodeLever.getVipID());
+			double totalPrice = 0;
+			if (validTime >= 24) {
+				totalPrice = lever.getTotalPriceOneMonth() * 24;
+				User businessUser = userService.selectByMap(loginUser.getId());
+				if (businessUser.getAcount() < totalPrice) {
+					result.setSuccess(false);
+					result.setMsg("账户余额不足！");
+				} else {
+					try {
+						SimpleDateFormat sdf = new SimpleDateFormat(
+								HorizonConfig.DATA_FORMAT);
+						nodeLever.setEndTime(sdf.parse("2030-12-31"));
+						if (nodeLever.getValidTime() != 0) {
+							nodeLever.setValidTime(0);
+						}
+						
+						User businessUserNew = new User();
+						businessUserNew.setId(businessUser.getId());
+						businessUserNew.setAcount(businessUser.getAcount() - totalPrice);
+						userService.updateByPrimaryKeySelective(businessUserNew);
+						nodeLeverService.updateByPrimaryKeySelective(nodeLever);
+						result.setSuccess(true);
+					} catch (ParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						result.setSuccess(false);
+						result.setMsg("系统错误！");
+					}
+				}
+			} else {
+				totalPrice = lever.getTotalPriceOneMonth() * validTime;
+				User businessUser = userService.selectByMap(loginUser.getId());
+				if (businessUser.getAcount() < totalPrice) {
+					result.setSuccess(false);
+					result.setMsg("账户余额不足！");
+				} else {
+			    	Calendar calendar=Calendar.getInstance(TimeZone.getDefault());   
+				    calendar.setTime(nodeLever.getEndTime());
+					calendar.add(Calendar.MONTH, validTime);
+					nodeLever.setEndTime(calendar.getTime());
+					if (nodeLever.getValidTime() != 0) {
+						nodeLever.setValidTime(0);
+					}
+					
+					User businessUserNew = new User();
+					businessUserNew.setId(businessUser.getId());
+					businessUserNew.setAcount(businessUser.getAcount() - totalPrice);
+					userService.updateByPrimaryKeySelective(businessUserNew);
+					nodeLeverService.updateByPrimaryKeySelective(nodeLever);
+					result.setSuccess(true);
+				}
+			}
+		} else {
+			result.setSuccess(false);
+			result.setObj("系统错误，时间类型或者时间未选择");
+		}
+		return result;
+	}	
+	@ResponseBody
 	@RequestMapping(value = "/listUser", method = RequestMethod.POST)
 	public Map<String, Object> listUser(HttpServletRequest request,
 			HttpServletResponse response, HttpSession session)
@@ -2207,24 +2597,5 @@ public class BusinessController {
 			result.setMsg("请输入热点名！");
 		}
 		return result;
-	}
-
-	@ResponseBody
-	@RequestMapping(value = "/getLimitMaxOnlineNum", method = RequestMethod.POST)
-	public int getLimitMaxOnlineNum(HttpServletRequest request,
-			HttpServletResponse response, HttpSession session)
-			throws ServletException, IOException {
-		User loginUser = (User) session.getAttribute("user");
-
-		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
-		}
-
-		int num = loginUser.getVipLevel();
-		if (User.LIMIT_ONLINE_MAX_NUM.length >= num) {
-			return User.LIMIT_ONLINE_MAX_NUM[num];
-		} else {
-			return 0;
-		}
 	}
 }

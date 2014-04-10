@@ -30,8 +30,6 @@
 		<result column="node_status" property="nodeStatus" jdbcType="TINYINT" />
 		<result column="vender_id" property="venderID" jdbcType="BIGINT" />
 		<result column="business_id" property="businessID" jdbcType="BIGINT" />
-		<result column="limit_online_user_num" property="limitOnlineUserNum"
-			jdbcType="INTEGER" />
 		<result column="running" property="running" jdbcType="TINYINT" />
 		<result column="remain_sms" property="remainSms" jdbcType="BIGINT" />
 		<result column="sms_code_valid_time" property="smsCodeValidTime"
@@ -56,8 +54,7 @@
 		each_limit_outgoing, start_time,
 		end_time, portal_url,
 		update_time,
-		create_time, login_type,node_status, vender_id, business_id,
-		limit_online_user_num,running, remain_sms, sms_code_valid_time, sms_code_valid_time_type,
+		create_time, login_type,node_status, vender_id, business_id,running, remain_sms, sms_code_valid_time, sms_code_valid_time_type,
 		sms_type, sms_code_length, sms_code_day_num, sms_code_obtain_interval,sms_content_id
 	</sql>
 	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
@@ -105,7 +102,7 @@
 			and node_status = #{nodeStatus, jdbcType=TINYINT}
 		</if>
 		<if test="businessID != -1">
-			and business_id = #{businessID, jdbcType=TINYINT}
+			and business_id = #{businessID, jdbcType=BIGINT}
 		</if>
 		<if test="ndName != null">
 			and node_name = #{ndName, jdbcType=VARCHAR}
@@ -126,10 +123,7 @@
 			jdbcType=TIMESTAMP}, interval 1 day)
 		</if>
 		<if test="businessID != -1">
-			and business_id = #{businessID, jdbcType=TINYINT}
-		</if>
-		<if test="businessID == -1">
-			and business_id != -1
+			and business_id = #{businessID, jdbcType=BIGINT}
 		</if>
 		
 	</select>
@@ -154,7 +148,7 @@
 			and node_status = #{nodeStatus, jdbcType=TINYINT}
 		</if>
 		<if test="businessID != -1">
-			and business_id = #{businessID, jdbcType=TINYINT}
+			and business_id = #{businessID, jdbcType=BIGINT}
 		</if>
 		<if test="ndName != null">
 			and node_name = #{ndName, jdbcType=VARCHAR}
@@ -183,8 +177,7 @@
 		each_limit_outgoing, start_time,
 		end_time, portal_url,
 		update_time,
-		create_time, login_type,node_status,vender_id, business_id,
-		limit_online_user_num, running, remain_sms, sms_code_valid_time,sms_code_valid_time_type,
+		create_time, login_type,node_status,vender_id, business_id, running, remain_sms, sms_code_valid_time,sms_code_valid_time_type,
 		sms_type, sms_code_length, sms_code_day_num, sms_code_obtain_interval, sms_content_id)
 		values
 		(#{id,jdbcType=BIGINT},
@@ -206,8 +199,7 @@
 		#{updateTime,jdbcType=TIMESTAMP}, #{createTime,jdbcType=TIMESTAMP},
 		#{loginType,jdbcType=TINYINT}, #{nodeStatus,jdbcType=TINYINT},
 		#{venderID,jdbcType=BIGINT},
-		#{businessID,jdbcType=BIGINT},
-		#{limitOnlineUserNum,jdbcType=INTEGER}, #{running,jdbcType=TINYINT},
+		#{businessID,jdbcType=BIGINT}, #{running,jdbcType=TINYINT},
 		#{remainSms,jdbcType=BIGINT}, #{smsCodeValidTime,jdbcType=BIGINT},#{smsCodeValidTimeType,jdbcType=TINYINT} ,
 		#{smsType,jdbcType=TINYINT}, #{smsCodeLength,jdbcType=INTEGER},
 		#{smsCodeDayNum,jdbcType=INTEGER}, #{smsCodeObtainInterval,jdbcType=BIGINT},
@@ -281,9 +273,6 @@
 			</if>
 			<if test="businessID != -1">
 				business_id,
-			</if>
-			<if test="limitOnlineUserNum != -1">
-				limit_online_user_num,
 			</if>
 			<if test="running != -1">
 				running,
@@ -379,9 +368,6 @@
 			</if>
 			<if test="businessID != -1">
 				#{businessID,jdbcType=BIGINT},
-			</if>
-			<if test="limitOnlineUserNum != -1">
-				#{limitOnlineUserNum,jdbcType=BIGINT},
 			</if>
 			<if test="running != -1">
 				#{running,jdbcType=TINYINT},
@@ -483,10 +469,6 @@
 			<if test="businessID != -1">
 				business_id = #{businessID,jdbcType=BIGINT},
 			</if>
-			<if test="limitOnlineUserNum != -1">
-				limit_online_user_num =
-				#{limitOnlineUserNum,jdbcType=INTEGER},
-			</if>
 			<if test="running != -1">
 				running = #{running,jdbcType=TINYINT},
 			</if>
@@ -559,8 +541,6 @@
 		#{venderID,jdbcType=BIGINT},
 		business_id =
 		#{businessID,jdbcType=BIGINT},
-		limit_online_user_num =
-		#{limitOnlineUserNum,jdbcType=INTEGER},
 		running =
 		#{running,jdbcType=TINYINT},
 		remain_sms = #{remainSms,jdbcType=BIGINT},

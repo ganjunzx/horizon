@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kechuang.wifidog.horizon.dao.LeverDao">
+	<resultMap id="BaseResultMap"
+		type="com.kechuang.wifidog.horizon.model.Lever">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="vip" property="vip" jdbcType="VARCHAR" />
+		<result column="max_online_num" property="maxOnlineNum" jdbcType="INTEGER" />
+		<result column="total_price_one_month" property="totalPriceOneMonth" jdbcType="DOUBLE" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id,vip, max_online_num, total_price_one_month
+	</sql>
+	<select id="selectByMap" resultMap="BaseResultMap"
+		parameterType="map">
+		select
+		<include refid="Base_Column_List" />
+		from horizon_lever
+		where 1=1
+		<if test="id != -1">
+			and id = #{id, jdbcType=BIGINT}
+		</if>
+		<if test="vip != null">
+			and vip = #{vip, jdbcType=BIGINT}
+		</if>
+	</select>
+	<select id="listAllLever" resultMap="BaseResultMap"
+		parameterType="map">
+		select
+		<include refid="Base_Column_List" />
+		from horizon_lever
+		where 1=1
+		<if test="limit != -1">
+			limit #{limit, jdbcType=BIGINT}
+		</if>
+		<if test="offset != -1">
+			offset #{offset,
+			jdbcType=BIGINT}
+		</if>
+	</select>
+
+	<select id="getTotalCount" resultType="java.lang.Long"
+		parameterType="map">
+		select
+		count(*)
+		from horizon_lever
+		where 1=1
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+		delete from
+		horizon_lever
+		where ID = #{id,jdbcType=BIGINT}
+	</delete>
+	<insert id="insert" parameterType="com.kechuang.wifidog.horizon.model.Lever"  useGeneratedKeys="true" keyProperty="id">
+		insert into
+		horizon_lever (id, vip, max_online_num, total_price_one_month)
+		values
+		(#{id,jdbcType=BIGINT}, 
+		#{vip,jdbcType=VARCHAR},
+		#{maxOnlineNum,jdbcType=INTEGER},
+		#{totalPriceOneMonth,jdbcType=DOUBLE},
+	</insert>
+	<insert id="insertSelective" parameterType="com.kechuang.wifidog.horizon.model.Lever"  useGeneratedKeys="true" keyProperty="id">
+		insert into horizon_lever
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="vip != null">
+				vip,
+			</if>
+			<if test="maxOnlineNum != -1">
+				max_online_num,
+			</if>
+			<if test="totalPriceOneMonth != -1">
+				total_price_one_month,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="vip != null">
+				#{vip,jdbcType=VARCHAR},
+			</if>
+			<if test="maxOnlineNum != -1">
+				#{max_online_num,jdbcType=INTEGER},
+			</if>
+			<if test="totalPriceOneMonth != -1">
+				#{total_price_one_month,jdbcType=DOUBLE},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="com.kechuang.wifidog.horizon.model.Lever">
+		update horizon_lever
+		<set>
+			<if test="vip != null">
+				vip = #{vip,jdbcType=VARCHAR},
+			</if>
+			<if test="maxOnlineNum != -1">
+				max_online_num = #{maxOnlineNum,jdbcType=INTEGER},
+			</if>
+			<if test="totalPriceOneMonth != -1">
+				total_price_one_month = #{totalPriceOneMonth,jdbcType=DOUBLE},
+			</if>
+		</set>
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="com.kechuang.wifidog.horizon.model.Lever">
+		update
+		horizon_lever
+		set 
+		vip = #{vip,jdbcType=VARCHAR},
+		max_online_num = #{maxOnlineNum,jdbcType=INTEGER},
+		total_price_one_month = #{totalPriceOneMonth,jdbcType=DOUBLE}
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+</mapper>
