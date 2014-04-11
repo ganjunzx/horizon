@@ -197,7 +197,7 @@ public class AdminController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 		Result result = new Result();
 		if (loginUser.getUserType() == User.USER_TYPE.SUPERUSER.ordinal()) {
@@ -221,7 +221,7 @@ public class AdminController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 		Result result = new Result();
 		if (loginUser.getUserType() == User.USER_TYPE.SUPERUSER.ordinal()) {
@@ -248,7 +248,7 @@ public class AdminController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 		Result result = new Result();
 		if (loginUser.getUserType() == User.USER_TYPE.SUPERUSER.ordinal()) {
@@ -403,7 +403,7 @@ public class AdminController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String userID = request.getParameter("userID");
@@ -501,7 +501,7 @@ public class AdminController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String strID = request.getParameter("id");
@@ -562,7 +562,7 @@ public class AdminController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String strTotalPrice = request.getParameter("totalPrice");
@@ -665,7 +665,7 @@ public class AdminController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String strTotalPrice = request.getParameter("totalPrice");
@@ -827,7 +827,7 @@ public class AdminController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String id = request.getParameter("id");
@@ -1023,7 +1023,7 @@ public class AdminController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String userName = request.getParameter("userName");
@@ -1165,7 +1165,7 @@ public class AdminController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String id = request.getParameter("id");
@@ -1297,7 +1297,7 @@ public class AdminController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String id = request.getParameter("id");
@@ -1430,7 +1430,7 @@ public class AdminController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String ndName = "Horizon" + System.currentTimeMillis();
@@ -1611,7 +1611,7 @@ public class AdminController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 		String mcode = request.getParameter("mcode");
 		String venderID = request.getParameter("venderUser");
@@ -1745,7 +1745,7 @@ public class AdminController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String id = request.getParameter("id");
@@ -1912,7 +1912,7 @@ public class AdminController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String id = request.getParameter("id");

@@ -173,6 +173,6 @@ public class UserController {
 		if (user != null) {
 			session.invalidate();
 		}
-		response.sendRedirect(request.getContextPath());
+		response.sendRedirect(request.getContextPath() + "/");
 	}
 }

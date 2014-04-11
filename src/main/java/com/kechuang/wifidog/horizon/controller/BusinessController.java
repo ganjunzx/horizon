@@ -191,7 +191,7 @@ public class BusinessController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String userName = request.getParameter("userName");
@@ -277,7 +277,7 @@ public class BusinessController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		Result result = new Result();
@@ -301,7 +301,7 @@ public class BusinessController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String userName = request.getParameter("userName");
@@ -361,7 +361,7 @@ public class BusinessController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String strTotalPrice = request.getParameter("totalPrice");
@@ -445,7 +445,7 @@ public class BusinessController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String nodeID = request.getParameter("ndName");
@@ -541,7 +541,7 @@ public class BusinessController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String strTotalPrice = request.getParameter("totalPrice");
@@ -1275,7 +1275,7 @@ public class BusinessController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String id = request.getParameter("id");
@@ -1360,7 +1360,7 @@ public class BusinessController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String id = request.getParameter("id");
@@ -1564,7 +1564,7 @@ public class BusinessController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String ndName = request.getParameter("ndName");
@@ -1793,7 +1793,7 @@ public class BusinessController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String userName = request.getParameter("userName");
@@ -1858,7 +1858,7 @@ public class BusinessController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String id = request.getParameter("id");
@@ -1984,7 +1984,7 @@ public class BusinessController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String id = request.getParameter("id");
@@ -2510,7 +2510,7 @@ public class BusinessController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String id = request.getParameter("id");
@@ -2543,7 +2543,7 @@ public class BusinessController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String mcode = request.getParameter("mcode");
@@ -2578,7 +2578,7 @@ public class BusinessController {
 		User loginUser = (User) session.getAttribute("user");
 
 		if (loginUser == null) {
-			response.sendRedirect(request.getContextPath());
+			response.sendRedirect(request.getContextPath() + "/");
 		}
 
 		String ndName = request.getParameter("ndName");
