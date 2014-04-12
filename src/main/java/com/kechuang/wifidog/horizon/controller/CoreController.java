@@ -42,9 +42,11 @@ import com.kechuang.wifidog.horizon.service.NodeLeverService;
 import com.kechuang.wifidog.horizon.service.NodeService;
 import com.kechuang.wifidog.horizon.service.RouteRecordService;
 import com.kechuang.wifidog.horizon.service.RouteStatusService;
+import com.kechuang.wifidog.horizon.service.SmsContentService;
 import com.kechuang.wifidog.horizon.service.SmsSecurityCodeService;
 import com.kechuang.wifidog.horizon.service.TokensService;
 import com.kechuang.wifidog.horizon.service.UserService;
+import com.kechuang.wifidog.horizon.utils.ChineseSmsUtils;
 import com.kechuang.wifidog.horizon.utils.CommonUtils;
 import com.kechuang.wifidog.horizon.utils.HorizonConfig;
 import com.kechuang.wifidog.horizon.utils.HorizonCoreUtil;
@@ -100,6 +102,10 @@ public class CoreController {
 	@Autowired
 	@Qualifier("com.kechuang.wifidog.horizon.service.impl.LeverService")
 	private LeverService leverService;
+	
+	@Autowired
+	@Qualifier("com.kechuang.wifidog.horizon.service.impl.SmsContentService")
+	private SmsContentService smsContentService;
 
 	@ResponseBody
 	@RequestMapping(value = "/auth/", method = RequestMethod.GET)
@@ -1104,6 +1110,28 @@ public class CoreController {
 							// TODO Auto-generated catch block
 							LOG.error(e);
 						}
+						byte mobileType = 4; 
+						try {
+							MobileLocation mobileLocation = MobileLocationUtil.getMobileLocation2(celPhone);
+							if (mobileLocation.isSuccess()) {
+								if (mobileLocation.getSupplier().equalsIgnoreCase(HorizonConfig.SMSSECURITYCODE_MOBILE_TYPE.CHINA_MOBILE.getName())) {
+									mobileType = (byte)HorizonConfig.SMSSECURITYCODE_MOBILE_TYPE.CHINA_MOBILE.getIndex();
+								} else if (mobileLocation.getSupplier().equalsIgnoreCase(HorizonConfig.SMSSECURITYCODE_MOBILE_TYPE.CHINA_UNICOM.getName())) {
+									mobileType = (byte)HorizonConfig.SMSSECURITYCODE_MOBILE_TYPE.CHINA_UNICOM.getIndex();
+								} else if (mobileLocation.getSupplier().equalsIgnoreCase(HorizonConfig.SMSSECURITYCODE_MOBILE_TYPE.CHINA_NET.getName())) {
+									mobileType = (byte)HorizonConfig.SMSSECURITYCODE_MOBILE_TYPE.CHINA_NET.getIndex();
+								} 
+							} else {
+								if (mobileLocation.getErrer().equalsIgnoreCase(celPhone+ "：手机号码格式错误！")) {
+									result.setSuccess(false);
+									result.setMsg("手机号码格式错误！");
+									return result;
+								}
+							}
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							LOG.error(e);
+						}
 						List<SmsSecurityCode> listSmsSecurityCode = smsSecurityCodeService.listAllSmsSecurityCode(node.getBusinessID(), node.getId(), celPhone, null, (byte)-1, currentDate, currentDate, -1, -1);
 						if (listSmsSecurityCode.size() >= node.getSmsCodeDayNum()) {
 							result.setSuccess(false);
@@ -1115,47 +1143,61 @@ public class CoreController {
 								
 								if ((currentTime - lastSendSmsTime) > (node.getSmsCodeObtainInterval() * 60 * 1000)) {
 									String smsVerifyCode = CommonUtils.generateVerifyCode(node.getSmsCodeLength());
-									SmsSecurityCode smsSecurityCode = new SmsSecurityCode(node.getBusinessID(), node.getId(), celPhone, smsVerifyCode,(byte)HorizonConfig.SMSSECURITYCODE_STATUS.NOLOGIN.getIndex(), (byte)1);
-									smsSecurityCodeService.insert(smsSecurityCode);
-									Node editNode = new Node();
-									editNode.setId(node.getId());
-									editNode.setRemainSms(node.getRemainSms() - 1);
-									nodeService.updateByPrimaryKeySelective(editNode);
-									result.setSuccess(true);
+									//插入短信验证信息
+									PropertiesTool propertiesTool = new PropertiesTool();
+									propertiesTool.loadFile("horizon.properties", "UTF-8");
+									String uid = propertiesTool.getString("horizon.chinese.sms.uid");
+									String key = propertiesTool.getString("horizon.chinese.sms.key");
+									String content = smsContentService.selectByMap(node.getSmsContentID()).getSmsContent();
+									content += " 验证码[" + smsVerifyCode + "]";
+									ChineseSmsUtils chineseSysUtils = new ChineseSmsUtils();
+									long sendResult = chineseSysUtils.sendVerifyCodeSms(uid, key, celPhone, content);
+									if (sendResult > 0) {
+										SmsSecurityCode smsSecurityCode = new SmsSecurityCode(node.getBusinessID(), node.getId(), celPhone, smsVerifyCode,(byte)HorizonConfig.SMSSECURITYCODE_STATUS.NOLOGIN.getIndex(), mobileType);
+										smsSecurityCodeService.insert(smsSecurityCode);
+										Node editNode = new Node();
+										editNode.setId(node.getId());
+										editNode.setRemainSms(node.getRemainSms() - 1);
+										nodeService.updateByPrimaryKeySelective(editNode);
+										result.setSuccess(true);
+									} else if (sendResult == -3) {
+										result.setSuccess(false);
+										result.setMsg("系统短信不足，请联系管理员");
+									} else if (sendResult == -4) {
+										result.setSuccess(false);
+										result.setMsg("手机号格式错误");
+									}
+									
 								} else {
 									result.setSuccess(false);
 									result.setMsg("验证码申请间隔时间" + node.getSmsCodeObtainInterval() + "分钟");
 								}
 							} else {
 								String smsVerifyCode = CommonUtils.generateVerifyCode(node.getSmsCodeLength());
-								byte mobileType = 4; 
-								try {
-									MobileLocation mobileLocation = MobileLocationUtil.getMobileLocation2(celPhone);
-									if (mobileLocation.isSuccess()) {
-										if (mobileLocation.getSupplier().equalsIgnoreCase(HorizonConfig.SMSSECURITYCODE_MOBILE_TYPE.CHINA_MOBILE.getName())) {
-											mobileType = (byte)HorizonConfig.SMSSECURITYCODE_MOBILE_TYPE.CHINA_MOBILE.getIndex();
-										} else if (mobileLocation.getSupplier().equalsIgnoreCase(HorizonConfig.SMSSECURITYCODE_MOBILE_TYPE.CHINA_UNICOM.getName())) {
-											mobileType = (byte)HorizonConfig.SMSSECURITYCODE_MOBILE_TYPE.CHINA_UNICOM.getIndex();
-										} else if (mobileLocation.getSupplier().equalsIgnoreCase(HorizonConfig.SMSSECURITYCODE_MOBILE_TYPE.CHINA_NET.getName())) {
-											mobileType = (byte)HorizonConfig.SMSSECURITYCODE_MOBILE_TYPE.CHINA_NET.getIndex();
-										} 
-									} else {
-										if (mobileLocation.getErrer().equalsIgnoreCase(celPhone+ "：手机号码格式错误！")) {
-											result.setSuccess(false);
-											result.setMsg("手机号码格式错误！");
-											return result;
-										}
-									}
-								} catch (Exception e) {
-									// TODO Auto-generated catch block
-									LOG.error(e);
+								PropertiesTool propertiesTool = new PropertiesTool();
+								propertiesTool.loadFile("horizon.properties", "UTF-8");
+								String uid = propertiesTool.getString("horizon.chinese.sms.uid");
+								String key = propertiesTool.getString("horizon.chinese.sms.key");
+								String content = smsContentService.selectByMap(node.getSmsContentID()).getSmsContent();
+								content += " 验证码[" + smsVerifyCode + "]";
+								ChineseSmsUtils chineseSysUtils = new ChineseSmsUtils();
+								long sendResult = chineseSysUtils.sendVerifyCodeSms(uid, key, celPhone, content);
+								if (sendResult > 0) {
+									SmsSecurityCode smsSecurityCode = new SmsSecurityCode(node.getBusinessID(), node.getId(), celPhone, smsVerifyCode,(byte)HorizonConfig.SMSSECURITYCODE_STATUS.NOLOGIN.getIndex(), mobileType);
+									smsSecurityCodeService.insert(smsSecurityCode);
+									Node editNode = new Node();
+									editNode.setId(node.getId());
+									editNode.setRemainSms(node.getRemainSms() - 1);
+									nodeService.updateByPrimaryKeySelective(editNode);
+									result.setSuccess(true);
+								} else if (sendResult == -3) {
+									result.setSuccess(false);
+									result.setMsg("系统短信不足，请联系管理员");
+								} else if (sendResult == -4) {
+									result.setSuccess(false);
+									result.setMsg("手机号格式错误");
 								}
-								
-								SmsSecurityCode smsSecurityCode = new SmsSecurityCode(node.getBusinessID(), node.getId(), celPhone, smsVerifyCode,(byte)HorizonConfig.SMSSECURITYCODE_STATUS.NOLOGIN.getIndex(), mobileType);
-								smsSecurityCodeService.insert(smsSecurityCode);
-								result.setSuccess(true);
 							}
-							
 						}
 						
 					} else {

@@ -22,7 +22,7 @@ import com.kechuang.wifidog.horizon.utils.MobileLocationUtil;
 public class ChineseSmsUtilsTest {
 	@Test
 	public void testGetRemainSystemSms() {
-		/*ChineseSmsUtils chineseSysUtils = new ChineseSmsUtils();
+		ChineseSmsUtils chineseSysUtils = new ChineseSmsUtils();
 		System.out.println(chineseSysUtils.remainSystemSms("ganjunzx", "13cda88591470424b536"));
 		
 		Date currentTime = new Date();
@@ -36,7 +36,9 @@ public class ChineseSmsUtilsTest {
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}*/
+		}
+		
+		System.out.println(chineseSysUtils.sendVerifyCodeSms("ganjunzx", "13cda88591470424b536", "18676719508", "验证码【1234】"));
 		
 		try {
 			System.out.println(MobileLocationUtil.getMobileLocation2("18676719508"));

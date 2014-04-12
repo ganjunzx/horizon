@@ -32,7 +32,7 @@ public class HorizonConfig {
 			"MOT", "Nokia", "Symbian", "Fennec", "Maemo", "Tear", "Midori",
 			"armv", "Windows CE", "WindowsCE", "Smartphone", "240x320",
 			"176x220", "320x320", "160x160", "webOS", "Palm", "Sagem",
-			"Samsung", "SGH", "SIE", "SonyEricsson", "MMP", "UCWEB" };
+			"Samsung", "SGH", "SIE", "SonyEricsson", "MMP", "UCWEB", "Windows NT", "Mac", "Linux"};
 
 	// tokens生存状态
 	public static enum TOKENS_STATUS {
