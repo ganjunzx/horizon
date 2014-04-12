@@ -282,27 +282,32 @@ public class CoreController {
 									response.flushBuffer();
 									return;
 								} else {
+									LOG.error("node connection status is errer!node connection is " + nodeConnection.getStatus());
 									response.getWriter().write("Auth: 0");
 									response.flushBuffer();
 									return;
 								}
 
 							} else {
+								LOG.error("node connection not found!tokenID=" + tokens.getId() + ";nodeID=" + node.getId() + ";businessID=" + node.getBusinessID());
 								response.getWriter().write("Auth: 6");
 								response.flushBuffer();
 								return;
 							}
 						} else {
+							LOG.error("node name is errer!nodeName:\t" + nodeName);
 							response.getWriter().write("Auth: 0");
 							response.flushBuffer();
 							return;
 						}
 					} else {
+						LOG.error("token is not found!token:\t" + token);
 						response.getWriter().write("Auth: 6");
 						response.flushBuffer();
 						return;
 					}
 				} else {
+					LOG.error("token is not found!");
 					response.getWriter().write("Auth: 6");
 					response.flushBuffer();
 					return;
@@ -431,28 +436,32 @@ public class CoreController {
 									response.flushBuffer();
 									return;
 								} else {
+									LOG.error("node connection status is errer!node connection is " + nodeConnection.getStatus());
 									response.getWriter().write("Auth: 0");
 									response.flushBuffer();
 									return;
 								}
 
 							} else {
+								LOG.error("node connection not found!tokenID=" + tokens.getId() + ";nodeID=" + node.getId() + ";businessID=" + node.getBusinessID());
 								response.getWriter().write("Auth: 6");
 								response.flushBuffer();
 								return;
 							}
 						} else {
+							LOG.error("node name is errer!nodeName:\t" + nodeName);
 							response.getWriter().write("Auth: 0");
 							response.flushBuffer();
 							return;
 						}
-
 					} else {
+						LOG.error("token is not found!token:\t" + token);
 						response.getWriter().write("Auth: 6");
 						response.flushBuffer();
 						return;
 					}
 				} else {
+					LOG.error("token is not found!");
 					response.getWriter().write("Auth: 6");
 					response.flushBuffer();
 					return;
@@ -588,34 +597,40 @@ public class CoreController {
 									response.flushBuffer();
 									return;
 								} else {
+									LOG.error("node connection status is errer!node connection is " + nodeConnection.getStatus());
 									response.getWriter().write("Auth: 0");
 									response.flushBuffer();
 									return;
 								}
 
 							} else {
+								LOG.error("node connection not found!tokenID=" + tokens.getId() + ";nodeID=" + node.getId() + ";businessID=" + node.getBusinessID());
 								response.getWriter().write("Auth: 6");
 								response.flushBuffer();
 								return;
 							}
 						} else {
+							LOG.error("node name is errer!nodeName:\t" + nodeName);
 							response.getWriter().write("Auth: 0");
 							response.flushBuffer();
 							return;
 						}
 
 					} else {
+						LOG.error("token is not found!token:\t" + token);
 						response.getWriter().write("Auth: 6");
 						response.flushBuffer();
 						return;
 					}
 				} else {
+					LOG.error("token is not found!");
 					response.getWriter().write("Auth: 6");
 					response.flushBuffer();
 					return;
 				}
 			}
 		} else {
+			LOG.error("parameter stage or incoming or mcode or outcoming is null!");
 			response.getWriter().write("Auth: 0");
 			response.flushBuffer();
 			return;

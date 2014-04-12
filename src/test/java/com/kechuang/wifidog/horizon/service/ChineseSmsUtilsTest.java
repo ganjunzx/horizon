@@ -38,7 +38,7 @@ public class ChineseSmsUtilsTest {
 			e.printStackTrace();
 		}
 		
-		System.out.println(chineseSysUtils.sendVerifyCodeSms("ganjunzx", "13cda88591470424b536", "18676719508", "验证码【1234】"));
+		/*System.out.println(chineseSysUtils.sendVerifyCodeSms("ganjunzx", "13cda88591470424b536", "18676719508", "验证码【1234】"));*/
 		
 		try {
 			System.out.println(MobileLocationUtil.getMobileLocation2("18676719508"));
