@@ -1164,7 +1164,7 @@ public class CoreController {
 									String uid = propertiesTool.getString("horizon.chinese.sms.uid");
 									String key = propertiesTool.getString("horizon.chinese.sms.key");
 									String content = smsContentService.selectByMap(node.getSmsContentID()).getSmsContent();
-									content += " 验证码[" + smsVerifyCode + "]";
+									content += " 验证码【" + smsVerifyCode + "】";
 									ChineseSmsUtils chineseSysUtils = new ChineseSmsUtils();
 									long sendResult = chineseSysUtils.sendVerifyCodeSms(uid, key, celPhone, content);
 									if (sendResult > 0) {
@@ -1181,8 +1181,11 @@ public class CoreController {
 									} else if (sendResult == -4) {
 										result.setSuccess(false);
 										result.setMsg("手机号格式错误");
+									} else {
+										result.setSuccess(false);
+										result.setMsg("短信系统出错!请联系管理员!");
+										LOG.error("短信发送错误代码:" + sendResult);
 									}
-									
 								} else {
 									result.setSuccess(false);
 									result.setMsg("验证码申请间隔时间" + node.getSmsCodeObtainInterval() + "分钟");
@@ -1194,7 +1197,7 @@ public class CoreController {
 								String uid = propertiesTool.getString("horizon.chinese.sms.uid");
 								String key = propertiesTool.getString("horizon.chinese.sms.key");
 								String content = smsContentService.selectByMap(node.getSmsContentID()).getSmsContent();
-								content += " 验证码[" + smsVerifyCode + "]";
+								content += " 验证码【" + smsVerifyCode + "】";
 								ChineseSmsUtils chineseSysUtils = new ChineseSmsUtils();
 								long sendResult = chineseSysUtils.sendVerifyCodeSms(uid, key, celPhone, content);
 								if (sendResult > 0) {
@@ -1211,6 +1214,10 @@ public class CoreController {
 								} else if (sendResult == -4) {
 									result.setSuccess(false);
 									result.setMsg("手机号格式错误");
+								} else {
+									result.setSuccess(false);
+									result.setMsg("短信系统出错!请联系管理员!");
+									LOG.error("短信发送错误代码:" + sendResult);
 								}
 							}
 						}
